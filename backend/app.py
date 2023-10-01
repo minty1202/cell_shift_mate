@@ -11,7 +11,9 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.config['DEBUG'] = os.environ.get('FLASK_ENV') == 'dev'
 
-CORS(app)
+allowed_origin = os.environ.get('ALLOWED_ORIGIN')
+
+CORS(app, origins=[allowed_origin])
 
 @app.route("/api/v1/optimize", methods=['POST'])
 def optimize_shifts():
