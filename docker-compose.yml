@@ -10,6 +10,7 @@ services:
       - ./backend:/app
     environment:
       - FLASK_ENV=dev
+      - ALLOWED_ORIGIN=http://localhost:5173
 
   frontend:
     build: 
