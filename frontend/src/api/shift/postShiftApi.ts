@@ -51,13 +51,11 @@ export const postShift = async () => {
 
   console.log('shiftsInput', shiftsInput)
 
-  const response = await fetch('http://localhost:5000/api/v1/optimize', {
+  return await fetch('http://localhost:5000/api/v1/optimize', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(shiftsInput),
   });
-
-  console.log('response', response.json());
 };
