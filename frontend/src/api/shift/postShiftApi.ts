@@ -51,7 +51,7 @@ export const postShift = async () => {
 
   console.log('shiftsInput', shiftsInput)
 
-  const response = await fetch('http://localhost:3000/api/shift', {
+  const response = await fetch('http://localhost:5000/api/v1/optimize', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
