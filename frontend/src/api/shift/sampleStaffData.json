@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "tier": 1,
+    "desiredOffDays": [1, 10, 15],
+    "workDays": 20
+  },
+  {
+    "id": 2,
+    "tier": 2,
+    "desiredOffDays": [2, 13, 20],
+    "workDays": 20
+  },
+  {
+    "id": 3,
+    "tier": 3,
+    "desiredOffDays": [3, 14, 21],
+    "workDays": 20
+  },
+  {
+    "id": 4,
+    "tier": 4,
+    "desiredOffDays": [4, 11, 22],
+    "workDays": 20
+  },
+  {
+    "id": 5,
+    "tier": 5,
+    "desiredOffDays": [5, 12, 23],
+    "workDays": 20
+  }
+]

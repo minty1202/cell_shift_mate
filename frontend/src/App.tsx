@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { ShiftTable } from './components/Shift/ShiftTable'
+import { postShift } from './api/shift/postShiftApi'
 
 function App() {
   const [shifts, setShifts] = useState({})
@@ -19,7 +21,9 @@ function App() {
   return (
     <>
       <button onClick={handlePost}>post</button>
-      <div>{JSON.stringify(shifts)}</div>
+
+      <button onClick={postShift}>postShift</button>
+      <ShiftTable />
     </>
   )
 }
