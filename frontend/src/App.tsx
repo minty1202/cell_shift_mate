@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ShiftTable } from './components/Shift/ShiftTable'
+import { postShift } from './api/shift/postShiftApi'
 
 function App() {
   const [shifts, setShifts] = useState({})
@@ -21,6 +22,7 @@ function App() {
     <>
       <button onClick={handlePost}>post</button>
 
+      <button onClick={postShift}>postShift</button>
       <ShiftTable />
     </>
   )

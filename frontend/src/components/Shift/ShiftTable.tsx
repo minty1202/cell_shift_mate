@@ -1,6 +1,22 @@
 import { useState } from 'react';
 import './ShiftTable.css';
 
+const Tier = {
+  Manager: 1,
+  DayManager: 2,
+  Upper: 3,
+  Middle: 4,
+  Junior: 5,
+};
+
+const TierNameMap = {
+  [Tier.Manager]: '店長クラス',
+  [Tier.DayManager]: '当日責任者',
+  [Tier.Upper]: '優秀層',
+  [Tier.Middle]: '一般層',
+  [Tier.Junior]: '新人層',
+};
+
 export const ShiftTable = () => {
   // 仮定: shiftDataは二次元配列で、各スタッフの30日分のシフトデータを保持しています。
   // 例: [['OFF', 'AM', 'PM', ...], [...], [...]]
