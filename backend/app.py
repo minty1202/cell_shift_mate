@@ -24,7 +24,6 @@ def optimize_shifts():
     return jsonify({"error": "Expected JSON"}), 400
 
   data = request.get_json()
-  logger.debug(data)
 
   if not all(param in data for param in ALLOWED_PARAMS):
     return jsonify({"error": "Missing required parameters"}), 400
@@ -32,4 +31,14 @@ def optimize_shifts():
   shifts = data['shifts']
   staffs = data['staffs']
 
-  return jsonify({"your_shifts": shifts, "your_staffs": staffs}), 200
+  shift_list = [
+    {
+      'date': shift['date'],
+      'staff_id': staff['id'],
+      'is_work': True
+    }
+    for shift in shifts
+    for staff in staffs
+  ]
+ 
+  return jsonify(shift_list), 200
