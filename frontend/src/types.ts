@@ -1,4 +1,3 @@
-
 export type StaffInput = {
   id: number;
   tier: number;
@@ -11,13 +10,23 @@ export type ShiftInput = {
   requiredStaffCount: number;
   requiredAttendanceTiers: number[];
   requiredAttendanceTierCount: number;
-  lockedStaffs: Array<{
-    id: StaffInput['id'];
-    isWorking: boolean;
-  }>;
 }
+
+export type Staff = StaffInput & {
+  name: string;
+};
+
+export type AssignedShift = {
+  date: number;
+  staffId: number;
+  isWorking: boolean;
+  locked: boolean;
+}
+
+export type LockedShift = Omit<AssignedShift, 'locked'>;
 
 export type ShiftsInput = {
   staffs: StaffInput[],
-  shifts: ShiftInput[]
+  shifts: ShiftInput[],
+  locked: LockedShift[]
 }

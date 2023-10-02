@@ -3,7 +3,7 @@ import logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-ALLOWED_PARAMS = ['shifts', 'staffs']
+ALLOWED_PARAMS = ['shifts', 'staffs', 'locked']
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -30,15 +30,17 @@ def optimize_shifts():
   
   shifts = data['shifts']
   staffs = data['staffs']
+  locked = data['locked']
 
   shift_list = [
     {
       'date': shift['date'],
-      'staff_id': staff['id'],
-      'is_work': True
+      'staffId': staff['id'],
+      'isWorking': True,
+      'locked': False
     }
     for shift in shifts
     for staff in staffs
   ]
- 
+
   return jsonify(shift_list), 200

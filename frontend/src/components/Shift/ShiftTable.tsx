@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './ShiftTable.css';
+import { Staff, ShiftInput, AssignedShift } from '@/types';
 
 const Tier = {
   Manager: 1,
@@ -17,31 +18,53 @@ const TierNameMap = {
   [Tier.Junior]: '新人層',
 };
 
-export const ShiftTable = () => {
-  // 仮定: shiftDataは二次元配列で、各スタッフの30日分のシフトデータを保持しています。
-  // 例: [['OFF', 'AM', 'PM', ...], [...], [...]]
-  const [shiftData, setShiftData] = useState([
-    Array(30).fill('OFF'), // スタッフ1
-    Array(30).fill('OFF'), // スタッフ2
-    // ... より多くのスタッフデータをここに追加できます。
-  ]);
+interface ShiftTableProps {
+  closedDays: number[];
+  busyDays: number[];
+  staffs: Staff[];
+  shifts: ShiftInput[];
+  assignedShifts: AssignedShift[];
+}
+
+export function ShiftTable({
+  closedDays,
+  busyDays,
+  staffs,
+  shifts,
+  assignedShifts,
+}: ShiftTableProps) {
+
+  const createStaffWithShifts = (staffs: Staff[], assignedShifts: AssignedShift[]) => {
+    return staffs.map((staff) => {
+      const myShifts = assignedShifts.filter((assignedShift) => assignedShift.staffId === staff.id);
+
+      const sortedShifts = myShifts.sort((a, b) => a.date - b.date);
+
+      return {
+        ...staff,
+        assignedShifts: sortedShifts,
+      };
+    });
+  };
+
+  const staffWithShifts = createStaffWithShifts(staffs, assignedShifts);
 
   return (
     <table className="shift-table">
       <thead>
         <tr>
           <th>Staff</th>
-          {Array.from({ length: 30 }, (_, i) => (
-            <th key={i}>{i + 1}</th>
+          {shifts.map((shift, index) => (
+            <th key={index}>{shift.date}</th>
           ))}
         </tr>
       </thead>
       <tbody>
-        {shiftData.map((staffShifts, staffIndex) => (
+        {staffWithShifts.map((staff, staffIndex) => (
           <tr key={staffIndex}>
-            <td>Staff {staffIndex + 1}</td>
-            {staffShifts.map((shift, dayIndex) => (
-              <td key={dayIndex}>{shift}</td>
+            <td>Staff {staff.name}</td>
+            {staff.assignedShifts.map((shift, dayIndex) => (
+              <td key={dayIndex}>{shift.isWorking ? '○' : '×'}</td>
             ))}
           </tr>
         ))}
