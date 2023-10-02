@@ -49,9 +49,7 @@ export const postShift = async () => {
     shifts: shiftInputArray
   }
 
-  console.log('shiftsInput', shiftsInput)
-
-  return await fetch('http://localhost:5000/api/v1/optimize', {
+  return await fetch(`${import.meta.env.VITE_API_URL}/api/v1/optimize`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

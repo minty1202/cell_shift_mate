@@ -21,3 +21,4 @@ services:
       - ./frontend:/app
     environment:
       - NODE_ENV=dev
+      - VITE_API_URL=http://localhost:5000
