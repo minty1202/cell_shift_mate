@@ -1,4 +1,4 @@
-import { StaffInput, ShiftInput, ShiftsInput } from './shift';
+import { StaffInput, ShiftInput, ShiftsInput } from '@/types';
 import sampleStaffData from './sampleStaffData.json';
 
 export const createShiftInput = (staffs: StaffInput[]): ShiftInput[] => {

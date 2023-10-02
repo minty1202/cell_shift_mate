@@ -1,4 +1,3 @@
-
 export type StaffInput = {
   id: number;
   tier: number;
