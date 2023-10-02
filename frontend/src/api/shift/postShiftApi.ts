@@ -1,9 +1,7 @@
 import { StaffInput, ShiftInput, ShiftsInput } from './shift';
 import sampleStaffData from './sampleStaffData.json';
 
-export const postShift = async () => {
-  const staffs: StaffInput[] = sampleStaffData;
-
+export const createShiftInput = (staffs: StaffInput[]): ShiftInput[] => {
   // 30日間の配列を作成
   const dateArray = [...Array(30)]
 
@@ -44,9 +42,16 @@ export const postShift = async () => {
     }
   })
 
+  return shiftInputArray
+}
+
+export const postShift = async () => {
+  const staffs: StaffInput[] = sampleStaffData;
+  const shifts = createShiftInput(staffs)
+
   const shiftsInput: ShiftsInput = {
     staffs,
-    shifts: shiftInputArray
+    shifts
   }
 
   return await fetch(`${import.meta.env.VITE_API_URL}/api/v1/optimize`, {
