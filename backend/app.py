@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from models.parameters import Staff, Shift, LockedShift
 from models.shift_schedule_model import ShiftScheduleModel
-from models.constraints import StaffConstraints, ShiftConstraints
+from models.constraints import StaffConstraints, ShiftConstraints, RequiredAttendanceConstraints
 
 ALLOWED_PARAMS = ['shifts', 'staffs', 'locked']
 
@@ -62,8 +62,13 @@ def optimize_shifts():
 
     staff_constraints = StaffConstraints(staffs)
     shift_constraints = ShiftConstraints(shifts)
+    required_attendance_constraints = RequiredAttendanceConstraints(shifts, staffs)
     shift_schedule_model = ShiftScheduleModel(shifts, staffs, locked)
-    shift_schedule_model.add_constraints([staff_constraints, shift_constraints])
+    shift_schedule_model.add_constraints([
+        staff_constraints,
+        shift_constraints,
+        required_attendance_constraints
+    ])
     shift_list = shift_schedule_model.solve()
 
     return jsonify(shift_list), 200
