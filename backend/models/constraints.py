@@ -57,8 +57,8 @@ class StaffConstraints(ConstraintsBase):
             - model: cp_model.CpModel, 制約プログラミングモデル
             - schedule_dict: dict, スタッフIDをキーとし、そのスタッフに関連するスケジュールリストを値とする辞書
 
-        このメソッドは、max_consecutive_work_days + 1日分のスライスを作成し、その期間で働く最大日数を max_consecutive_work_days に制約します。
-        各スライスは連勤日の可能性がある期間を表し、それぞれのスライスで働く日数が max_consecutive_work_days 以下であることを保証します。
+        このメソッドは、max_consecutive_work_days + 1日分のスライスを作成し、その期間で働く最大日数を max_consecutive_work_days に制約します
+        各スライスは連勤日の可能性がある期間を表し、それぞれのスライスで働く日数が max_consecutive_work_days 以下であることを保証します
         """
         max_consecutive_work_days = 5
         for _, schedule_list in schedule_dict.items():
