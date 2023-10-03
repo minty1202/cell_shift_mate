@@ -33,7 +33,7 @@ class ShiftScheduleModel:
         """
         与えられたシフト、スタッフ、ロックされたシフトでShiftScheduleModelを初期化します
 
-        パラメータ:
+        Parameters:
         - shifts (list of Shift): 各シフトには日付、必要なスタッフ数などの情報が含まれています
         - staffs (list of Staff): 各スタッフにはID、役職レベル、希望休、週に働ける日数などの情報が含まれています
         - locked (list of LockedShift): 各要素はロックされているシフトの情報を保持し、スタッフID、シフト日、働いているかどうかの情報を含んでいます
@@ -45,10 +45,10 @@ class ShiftScheduleModel:
         """
         与えられたシフトとスタッフに対するScheduleAttributesオブジェクトを作成し、リストとして返します
         
-        パラメータ:
-        - shifts (list): init メソッドのパラメータと同じ
-        - staffs (list): init メソッドのパラメータと同じ
-        - locked (list): init メソッドのパラメータと同じ
+        Parameters:
+        - shifts (list): init メソッドの Parameters と同じ
+        - staffs (list): init メソッドの Parameters と同じ
+        - locked (list): init メソッドの Parameters と同じ
 
         戻り値:
         - ScheduleAttributesのリスト: 各シフトとスタッフメンバーに関連するシフト属性と関連するCP-SATモデル変数を含むリスト

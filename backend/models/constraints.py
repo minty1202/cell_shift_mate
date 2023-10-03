@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 class ConstraintsBase:
     """
     制約を追加するの基底クラス
@@ -123,3 +125,73 @@ class ShiftConstraints(ConstraintsBase):
         """
         schedule_dict = self._create_schedule_dict(schedule_list)
         self._add_required_staff_count_constraints(model, schedule_dict)
+
+@dataclass
+class RequiredAttendanceAttributes:
+
+    """
+    特定日に必要な役職を持つスタッフIDと必要な役職の数を保持するクラス
+
+    属性:
+    - date (int): シフトの日付
+    - staff_ids (list): 必要な権限を持つスタッフのIDのリスト
+    - required_attendance_tier_count (int): 必要な役職の数
+    """
+    date: int
+    staff_ids: list
+    required_attendance_tier_count: int
+
+class RequiredAttendanceConstraints(ConstraintsBase):
+    """
+    必須役職に関する制約を追加するクラス
+
+    必須役職は Shift クラスの required_attendance_tiers によって定義される
+    作られたインスタンスは ShiftScheduleModel クラスの add_constraints() メソッドに渡される
+    """
+    def __init__(self, shifts, staffs):
+        self.shifts = shifts
+        self.staffs = staffs
+        self.required_attendance_attributes = self._create_required_attendance_attributes()
+
+
+    def _create_required_attendance_attributes(self):
+        """
+        date をキーとし、その日に必要な役職を持つスタッフの情報を値とする辞書を作成する
+        """
+        required_attendance_attributes = {}
+        for shift in self.shifts:
+            staff_ids = [staff.id for staff in self.staffs if staff.tier in shift.required_attendance_tiers]
+            required_attendance_attributes[shift.date] = RequiredAttendanceAttributes(
+                date = shift.date,
+                staff_ids = staff_ids,
+                required_attendance_tier_count = shift.required_attendance_tier_count
+            )
+        return required_attendance_attributes
+
+    def _create_schedule_dict(self, schedule_list):
+        """
+        required_attendance_attributes を参照し、date をキーとし、その日のスケジュールリストを値とする辞書を作成する
+        """
+        return {shift.date: [s for s in schedule_list if s.date == shift.date] for shift in self.shifts}
+
+    def _add_required_attendance_tier_count_constraints(self, model, schedule_dict):
+        """
+        必要な役職の数を満たす制約を追加する
+
+        Parameters:
+            - model: cp_model.CpModel, 制約プログラミングモデル
+            - schedule_dict: dict, required_attendance_attributes を参照し、date をキーとし、その日のスケジュールリストを値とする辞書
+        """
+        for date, schedule_list in schedule_dict.items():
+            required_attendance_attributes = self.required_attendance_attributes[date]
+            model.Add(sum([s.is_working_variable for s in schedule_list if s.staff_id in required_attendance_attributes.staff_ids]) >= required_attendance_attributes.required_attendance_tier_count)
+
+    def add_constraints(self, model, schedule_list):
+        """
+        制約を追加するメソッド
+        ShiftScheduleModel クラスの add_constraints() メソッドで呼び出される
+
+        各制約追加のプライベートメソッドを呼び出す
+        """
+        schedule_dict = self._create_schedule_dict(schedule_list)
+        self._add_required_attendance_tier_count_constraints(model, schedule_dict)
