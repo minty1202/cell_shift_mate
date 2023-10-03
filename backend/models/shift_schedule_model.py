@@ -92,7 +92,7 @@ class ShiftScheduleModel:
                 {
                     'date': shift.date,
                     'staffId': shift.staff_id,
-                    'isWorking': solver.Value(shift.is_working_variable),
+                    'isWorking': bool(solver.Value(shift.is_working_variable)),
                     'locked': shift.locked
                 }
                 for shift in self.shift_schedule_model_attributes
