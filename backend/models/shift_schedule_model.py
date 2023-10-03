@@ -71,7 +71,7 @@ class ShiftScheduleModel:
                 self.model.Add(shift.is_working_variable == int(locked_shifts_dict[(shift.date, shift.staff_id)]))
 
         return shift_list
-    
+
     def add_constraints(self, constraints):
         """
         制約を追加するメソッド

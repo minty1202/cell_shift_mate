@@ -81,3 +81,45 @@ class StaffConstraints(ConstraintsBase):
         schedule_dict = self._create_schedule_dict(schedule_list)
         self._add_work_days_constraints(model, schedule_dict)
         self._add_consecutive_working_days_constraints(model, schedule_dict)
+
+class ShiftConstraints(ConstraintsBase):
+    """
+    シフトに関する制約を追加するクラス
+    作られたインスタンスは ShiftScheduleModel クラスの add_constraints() メソッドに渡される
+    """
+
+    def __init__(self, shifts):
+        self.shifts = shifts
+        self.shifts_dict = {shift.date: shift for shift in shifts}
+
+    def _create_schedule_dict(self, schedule_list):
+        """
+        シフトの日付をキーとして、スケジュールを辞書にまとめる
+        ex {date_1: [schedule_list], date_2: [schedule_list], ...}
+
+        Parameters:
+            - schedule_list: list, ScheduleAttributesのリスト
+        """
+        return {shift.date: [s for s in schedule_list if s.date == shift.date] for shift in self.shifts}
+
+    def _add_required_staff_count_constraints(self, model, schedule_dict):
+        """
+        必要なスタッフメンバー数を満たす制約を追加する
+
+        Parameters:
+            - model: cp_model.CpModel, 制約プログラミングモデル
+            - schedule_dict: dict, シフトの日付をキーとし、その日のスケジュールリストを値とする辞書
+        """
+        for date, schedule_list in schedule_dict.items():
+            shift = self.shifts_dict[date]
+            model.Add(sum([s.is_working_variable for s in schedule_list]) >= shift.required_staff_count)
+
+    def add_constraints(self, model, schedule_list):
+        """
+        制約を追加するメソッド
+        ShiftScheduleModel クラスの add_constraints() メソッドで呼び出される
+
+        各制約追加のプライベートメソッドを呼び出す
+        """
+        schedule_dict = self._create_schedule_dict(schedule_list)
+        self._add_required_staff_count_constraints(model, schedule_dict)
