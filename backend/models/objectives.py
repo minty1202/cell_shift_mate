@@ -1,3 +1,5 @@
+import random
+
 class ObjectivesBase:
     """
     目的関数の基底クラス
@@ -59,3 +61,28 @@ class StaffObjectives(ObjectivesBase):
         """
         schedule_dict = self._create_schedule_dict(schedule_list)
         return self._compute_desired_off_days_objective_value(schedule_dict)
+
+
+class RandomizedObjective(ObjectivesBase):
+    """
+    ランダムな目的関数を追加するクラス
+    作られたインスタンスは ShiftScheduleModel クラスの compute_objective_value() メソッドに渡される
+
+    Parameters:
+        - seed: int, ランダムシード 解を再現ないし、固定するために使用する
+    """
+    def __init__(self, seed=None):
+        self.random = random.Random(seed)
+
+    def compute_objective_value(self, schedule_list):
+        """
+        目的関数の値を計算するメソッド
+        出勤時に -1 か 1 をランダムに選び、その値をペナルティとする
+
+        Parameters:
+            - schedule_list: list, ScheduleAttributes のリスト
+        """
+        penalty = 0
+        for schedule in schedule_list:
+            penalty += self.random.choice([-1, 1]) * schedule.is_working_variable
+        return penalty
