@@ -70,8 +70,10 @@ def optimize_shifts():
         shift_constraints,
         required_attendance_constraints
     ])
+
+    staff_objectives = StaffObjectives(staffs)
     shift_schedule_model.add_objectives([
-        StaffObjectives(staffs)
+        staff_objectives,
     ])
 
     shift_list = shift_schedule_model.solve()
