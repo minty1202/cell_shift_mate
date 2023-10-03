@@ -9,10 +9,10 @@ class ConstraintsBase:
         """
         制約を追加するメソッド
 
-        パラメータ:
+        Parameters:
         - self
         - model: cp_model
-        - schedule_list: ScheduleAttributesのリスト
+        - schedule_list: ScheduleAttributes のリスト
         """
         raise NotImplementedError("add_constraints() must be implemented.")
 
