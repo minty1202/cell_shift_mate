@@ -28,16 +28,48 @@ class StaffConstraints(ConstraintsBase):
         """
         スタッフメンバーのIDをキーとして、スケジュールを辞書にまとめる
         ex {staff_id_1: [schedule_list], staff_id_2: [schedule_list], ...}
+
+        Parameters:
+            - schedule_list: list, ScheduleAttributesのリスト
         """
         return {staff.id: [s for s in schedule_list if s.staff_id == staff.id] for staff in self.staffs}
 
     def _add_work_days_constraints(self, model, schedule_dict):
         """
         スタッフの出勤数が work_days と一致するように制約を追加する
+
+        Parameters:
+            - model: cp_model.CpModel, 制約プログラミングモデル
+            - schedule_dict: dict, スタッフIDをキーとし、そのスタッフに関連するスケジュールリストを値とする辞書
         """
         for staff_id, schedule_list in schedule_dict.items():
             staff = self.staffs_dict[staff_id]
             model.Add(sum([s.is_working_variable for s in schedule_list]) == staff.work_days)
+
+    def _add_consecutive_working_days_constraints(self, model, schedule_dict):
+        """
+        過度な連勤を防ぐ制約を追加する
+        2023/10/03 時点では、最大連勤数は5日
+
+        TODO: 連勤数を変更できるようにする
+
+        Parameters:
+            - model: cp_model.CpModel, 制約プログラミングモデル
+            - schedule_dict: dict, スタッフIDをキーとし、そのスタッフに関連するスケジュールリストを値とする辞書
+
+        このメソッドは、max_consecutive_work_days + 1日分のスライスを作成し、その期間で働く最大日数を max_consecutive_work_days に制約します。
+        各スライスは連勤日の可能性がある期間を表し、それぞれのスライスで働く日数が max_consecutive_work_days 以下であることを保証します。
+        """
+        max_consecutive_work_days = 5
+        for _, schedule_list in schedule_dict.items():
+            for i in range(len(schedule_list) - max_consecutive_work_days):
+                # 連続したmax_consecutive_work_days日 + 1日のスケジュールを取得し、この期間での連勤数を制約に追加する
+                # 例えば max_consecutive_work_days = 5 の場合
+                # 1回目のループでは 1日目から6日目までで5勤を防ぐ制約を追加する
+                # 2回目のループでは 2日目から7日目までで5勤を防ぐ制約を追加する
+                # これを繰り返すことで、最大連勤数を制約に追加する
+                consecutive_days_schedule = schedule_list[i:i + max_consecutive_work_days + 1]
+                model.Add(sum(s.is_working_variable for s in consecutive_days_schedule) <= max_consecutive_work_days)
 
     def add_constraints(self, model, schedule_list):
         """
@@ -48,3 +80,4 @@ class StaffConstraints(ConstraintsBase):
         """
         schedule_dict = self._create_schedule_dict(schedule_list)
         self._add_work_days_constraints(model, schedule_dict)
+        self._add_consecutive_working_days_constraints(model, schedule_dict)
