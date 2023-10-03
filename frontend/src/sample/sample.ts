@@ -22,6 +22,9 @@ const createShiftInput = ({
   // requiredAttendanceTiers は 店長と当日責任者の 1 と 2 が必要
   const requiredAttendanceTiers = [1, 2]
 
+  // 役職者の必要人数
+  const requiredAttendanceTierCount = 1
+
   // 通常日の必要人数
   const requiredStaffCountOnNormal = 3
 
@@ -70,7 +73,7 @@ const createShiftInput = ({
       date,
       requiredStaffCount,
       requiredAttendanceTiers,
-      requiredAttendanceTierCount: requiredAttendanceTiers.length,
+      requiredAttendanceTierCount: closedDays.includes(date) ? 0 : requiredAttendanceTierCount,
     }
   })
 }
