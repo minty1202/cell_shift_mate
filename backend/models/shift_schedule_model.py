@@ -81,6 +81,16 @@ class ShiftScheduleModel:
         for constraint in constraints:
             constraint.add_constraints(self.model, self.shift_schedule_model_attributes)
 
+    def add_objectives(self, objectives):
+        """
+        目的関数を追加するメソッド
+        models/objectives.py で作られた各クラスのインスタンスのリストを受け取り、
+        それぞれのインスタンスに定義された compute_objective_value() メソッドを実行することで、目的関数の値を計算する
+        計算された目的関数を Minimize するように設定する
+        """
+        total_objective_value = sum([objective.compute_objective_value(self.shift_schedule_model_attributes) for objective in objectives])
+        self.model.Minimize(total_objective_value)
+
     def solve(self):
         solver = cp_model.CpSolver()
         status = solver.Solve(self.model)
@@ -92,7 +102,7 @@ class ShiftScheduleModel:
                 {
                     'date': shift.date,
                     'staffId': shift.staff_id,
-                    'isWorking': solver.Value(shift.is_working_variable),
+                    'isWorking': bool(solver.Value(shift.is_working_variable)),
                     'locked': shift.locked
                 }
                 for shift in self.shift_schedule_model_attributes
