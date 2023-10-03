@@ -12,7 +12,7 @@ class ObjectivesBase:
         目的関数の値を計算するメソッド
         """
         raise NotImplementedError("compute_objective_value() must be implemented.")
-    
+
 class StaffObjectives(ObjectivesBase):
     """
     スタッフメンバーに関する目的関数を追加するクラス
@@ -61,7 +61,6 @@ class StaffObjectives(ObjectivesBase):
         """
         schedule_dict = self._create_schedule_dict(schedule_list)
         return self._compute_desired_off_days_objective_value(schedule_dict)
-
 
 class RandomizedObjective(ObjectivesBase):
     """
