@@ -71,7 +71,6 @@ const createShiftInput = ({
       requiredStaffCount,
       requiredAttendanceTiers,
       requiredAttendanceTierCount: requiredAttendanceTiers.length,
-      lockedStaffs: [],
     }
   })
 }
