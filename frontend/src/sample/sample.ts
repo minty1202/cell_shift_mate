@@ -77,11 +77,19 @@ const createShiftInput = ({
 
 const shifts = createShiftInput({ closedDays, busyDays })
 
-const lockedShift: LockedShift[] = [{
-  date: 1,
-  staffId: 1,
-  isWorking: true,
-}]
+const createLockedShift = ({ closedDays, staffs }: { closedDays: number[]; staffs: StaffInput[] }) => {
+  return closedDays.map((date) => {
+    return staffs.map((staff) => {
+      return {
+        date,
+        staffId: staff.id,
+        isWorking: false,
+      }
+    })
+  }).flat()
+}
+
+const lockedShift: LockedShift[] = createLockedShift({ closedDays, staffs })
 
 const createAssignedShifts = ({
   staffs,
