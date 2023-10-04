@@ -121,11 +121,11 @@ class ShiftBalanceTierObjectives(ObjectivesBase):
             lower_tier_count = sum([schedule.is_working_variable for staff_id, schedule in schedule_dict.items() if staff_id in self.lower_tier_staff_ids])
 
             # diff_var は lower_tier_count と heights_tier_count の差を保持する変数
-            diff_var = model.NewIntVar(-total_staff_count, total_staff_count, "diff")
+            diff_var = model.NewIntVar(-total_staff_count, total_staff_count, "shift_balance_tier_diff")
             model.Add(diff_var == lower_tier_count - heights_tier_count)
 
             # is_diff_positive は diff_var が 0 以上であるかどうかを示すブール変数
-            is_diff_positive = model.NewBoolVar("is_diff_positive")
+            is_diff_positive = model.NewBoolVar("shift_balance_tier_is_diff_positive")
             
             # diff_var が 0 以上の場合、is_diff_positive をTrueとして設定
             model.Add(diff_var >= 0).OnlyEnforceIf(is_diff_positive)
