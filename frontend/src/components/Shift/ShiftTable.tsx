@@ -1,5 +1,7 @@
-import './ShiftTable.css';
 import { Staff, ShiftInput, AssignedShift } from '@/types';
+import { Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+
 
 // const Tier = {
 //   Manager: 1,
@@ -17,6 +19,67 @@ import { Staff, ShiftInput, AssignedShift } from '@/types';
 //   [Tier.Junior]: '新人層',
 // };
 
+const SHIFT_DATA_INDEX_PREFIX = 'shifts';
+interface ShiftDataType {
+  [key: string]: {
+    isWorking: boolean;
+  }
+}
+
+function Cell({ value }: { value: ShiftDataType }) {
+  return (
+    <>
+      {value.isWorking ? '○' : '×'}
+    </>
+  );
+}
+
+const addShiftDataIndexPrefix = (date: number) => `${SHIFT_DATA_INDEX_PREFIX}.${date}`;
+
+
+interface DataType {
+  name: string;
+  shifts: ShiftDataType;
+}
+
+const createColumns = (shifts: ShiftInput[]): ColumnsType<DataType> => {
+  const columns: ColumnsType<DataType> = [
+    {
+      title: 'Staff',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    ...shifts.map((shift) => ({
+      title: shift.date,
+      dataIndex: ['shifts', addShiftDataIndexPrefix(shift.date)],
+      key: shift.date,
+      render: (value: ShiftDataType) => <Cell value={value} />,
+    })),
+  ];
+  return columns;
+}
+
+const createData = (staffs: Staff[], assignedShifts: AssignedShift[]) => {
+  return staffs.map((staff) => {
+    const myShifts = assignedShifts.filter((assignedShift) => assignedShift.staffId === staff.id);
+
+    const sortedShifts = myShifts.sort((a, b) => a.date - b.date);
+
+    const shifts = sortedShifts.reduce((acc: ShiftDataType, shift) => {
+      acc[addShiftDataIndexPrefix(shift.date)] = {
+        isWorking:  shift.isWorking
+      };
+      return acc;
+    }, {});
+
+    return {
+      name: `Staff ${staff.name}`,
+      shifts,
+      key: staff.id,
+    };
+  });
+};
+
 interface ShiftTableProps {
   closedDays: number[];
   busyDays: number[];
@@ -33,41 +96,17 @@ export function ShiftTable({
   assignedShifts,
 }: ShiftTableProps) {
 
-  const createStaffWithShifts = (staffs: Staff[], assignedShifts: AssignedShift[]) => {
-    return staffs.map((staff) => {
-      const myShifts = assignedShifts.filter((assignedShift) => assignedShift.staffId === staff.id);
-
-      const sortedShifts = myShifts.sort((a, b) => a.date - b.date);
-
-      return {
-        ...staff,
-        assignedShifts: sortedShifts,
-      };
-    });
-  };
-
-  const staffWithShifts = createStaffWithShifts(staffs, assignedShifts);
+  const columns = createColumns(shifts);
+  const data = createData(staffs, assignedShifts);
 
   return (
-    <table className="shift-table">
-      <thead>
-        <tr>
-          <th>Staff</th>
-          {shifts.map((shift, index) => (
-            <th key={index}>{shift.date}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {staffWithShifts.map((staff, staffIndex) => (
-          <tr key={staffIndex}>
-            <td>Staff {staff.name}</td>
-            {staff.assignedShifts.map((shift, dayIndex) => (
-              <td key={dayIndex}>{shift.isWorking ? '○' : '×'}</td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <Table
+      columns={columns}
+      dataSource={data}
+      pagination={false}
+      bordered
+      size="small"
+      scroll={{ x: 'max-content' }}
+    />
   );
 };
