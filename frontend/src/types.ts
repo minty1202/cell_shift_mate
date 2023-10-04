@@ -23,10 +23,10 @@ export type AssignedShift = {
   locked: boolean;
 }
 
-export type LockedShift = Omit<AssignedShift, 'locked'>;
+export type LockedShiftInput = Omit<AssignedShift, 'locked'>;
 
 export type ShiftsInput = {
   staffs: StaffInput[],
   shifts: ShiftInput[],
-  locked: LockedShift[]
+  locked: LockedShiftInput[]
 }
