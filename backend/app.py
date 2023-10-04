@@ -5,7 +5,7 @@ from flask_cors import CORS
 from models.parameters import Staff, Shift, LockedShift
 from models.shift_schedule_model import ShiftScheduleModel
 from models.constraints import StaffConstraints, ShiftConstraints, RequiredAttendanceConstraints
-from models.objectives import StaffObjectives, RandomizedObjective
+from models.objectives import StaffObjectives, ShiftBalanceTierObjectives, RandomizedObjective
 
 ALLOWED_PARAMS = ['shifts', 'staffs', 'locked']
 
@@ -72,9 +72,11 @@ def optimize_shifts():
     ])
 
     staff_objectives = StaffObjectives(staffs)
+    shift_balance_tier_objectives = ShiftBalanceTierObjectives(shifts, staffs)
     randomized_objective = RandomizedObjective()
     shift_schedule_model.add_objectives([
         staff_objectives,
+        shift_balance_tier_objectives,
         randomized_objective
     ])
 

@@ -88,7 +88,7 @@ class ShiftScheduleModel:
         それぞれのインスタンスに定義された compute_objective_value() メソッドを実行することで、目的関数の値を計算する
         計算された目的関数を Minimize するように設定する
         """
-        total_objective_value = sum([objective.compute_objective_value(self.shift_schedule_model_attributes) for objective in objectives])
+        total_objective_value = sum([objective.compute_objective_value(self.model, self.shift_schedule_model_attributes) for objective in objectives])
         self.model.Minimize(total_objective_value)
 
     def solve(self):
