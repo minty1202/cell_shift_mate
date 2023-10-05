@@ -1,4 +1,4 @@
-import { StaffInput, ShiftInput, LockedShift, AssignedShift } from '@/types';
+import { StaffInput, ShiftInput, LockedShiftInput, AssignedShift } from '@/types';
 import sampleStaffData from './sampleStaffData.json';
 
 const staffs: StaffInput[] = sampleStaffData;
@@ -92,7 +92,7 @@ const createLockedShift = ({ closedDays, staffs }: { closedDays: number[]; staff
   }).flat()
 }
 
-const lockedShift: LockedShift[] = createLockedShift({ closedDays, staffs })
+const lockedShift: LockedShiftInput[] = createLockedShift({ closedDays, staffs })
 
 const createAssignedShifts = ({
   staffs,
@@ -101,7 +101,7 @@ const createAssignedShifts = ({
 }: {
   staffs: StaffInput[];
   shifts: ShiftInput[];
-  lockedShift: LockedShift[];
+  lockedShift: LockedShiftInput[];
 }): AssignedShift[] => {
   const assignedShifts: AssignedShift[] = []
 
