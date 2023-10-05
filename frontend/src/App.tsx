@@ -3,13 +3,17 @@ import { ShiftTable } from './components/Shift/ShiftTable'
 import { optimizeShift } from './api/shift/optimizeShiftApi'
 import { AssignedShift } from '@/types'
 
-import { staffs as staffInput, shifts, closedDays, busyDays, assignedShifts as assignedShiftsData } from '@/sample/sample';
+import { staffs as staffInput, shifts, closedDays, busyDays, assignedShifts as assignedShiftsData, lockedShift } from '@/sample/sample';
 
 function App() {
   const [assignedShifts, setAssignedShifts] = useState<AssignedShift[]>(assignedShiftsData)
 
   const handlePost = async () => {
-    const res = await optimizeShift()
+    const res = await optimizeShift({
+      staffs: staffInput,
+      shifts,
+      locked: lockedShift,
+    })
     const data = await res.json()
     console.log(data)
     setAssignedShifts(data)
