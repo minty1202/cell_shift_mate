@@ -1,7 +1,7 @@
 import { ShiftsInput } from '@/types';
 import { staffs, shifts, lockedShift } from '@/sample/sample';
 
-export const postShift = async () => {
+export const optimizeShift = async () => {
   const shiftsInput: ShiftsInput = {
     staffs,
     shifts,
