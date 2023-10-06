@@ -1,44 +1,63 @@
 import { useState, ReactElement } from "react";
 import { ShiftTable } from '@/components/Shift/ShiftTable'
 import { optimizeShift } from '@/api/shift/optimizeShiftApi'
-import { AssignedShift } from '@/types'
 
-import { staffs as staffInput, shifts, closedDays, busyDays, assignedShifts as assignedShiftsData, lockedShift } from '@/sample/sample';
+import { staffs as sampleStaffs, shifts as sampleShifts, lockedShift } from '@/sample/sample';
 
-export function ShiftSchedulePage(): ReactElement {
-  const [assignedShifts, setAssignedShifts] = useState<AssignedShift[]>(assignedShiftsData)
+import { ShiftManagementProvider, useShiftManagement } from '@/contexts/ShiftManagementContext'
+
+function ShiftSchedule() : ReactElement {
+  const [staffCount, setStaffCount] = useState<number>(0)
+  const { state, actions } = useShiftManagement()
+  const { staffs, shiftSchedules, shifts, assignedShifts } = state
 
   const handlePost = async () => {
     const res = await optimizeShift({
-      staffs: staffInput,
-      shifts,
+      staffs: sampleStaffs,
+      shifts: sampleShifts,
       locked: lockedShift,
     })
     const data = await res.json()
     console.log(data)
-    setAssignedShifts(data)
+    actions.updateAssignedShifts(data)
   }
 
-  const staffs = staffInput.map((staff) => {
-    return {
+  const handelAddStaffs = () => {
+    if (staffCount === sampleStaffs.length) {
+      alert('サンプルもうないで')
+      return 
+    }
+
+    const staff = sampleStaffs[staffCount]
+    actions.addStaff({
       id: staff.id,
-      name: String(staff.id),
       tier: staff.tier,
       desiredOffDays: staff.desiredOffDays,
       workDays: staff.workDays,
-    }
-  })
+    })
+    setStaffCount(staffCount + 1)
+  }
 
   return (
     <>
+      <button onClick={handelAddStaffs}>add staffs</button>
+      <br />
       <button onClick={handlePost}>post</button>
       <ShiftTable
-        closedDays={closedDays}
-        busyDays={busyDays}
+        closedDays={shiftSchedules.closedDays}
+        busyDays={shiftSchedules.busyDays}
         staffs={staffs}
         shifts={shifts}
         assignedShifts={assignedShifts}
       />
     </>
+  )
+}
+
+export function ShiftSchedulePage(): ReactElement {
+  return (
+    <ShiftManagementProvider>
+      <ShiftSchedule />
+    </ShiftManagementProvider>
   )
 }
