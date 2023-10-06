@@ -80,7 +80,9 @@ export const useAssignedShiftManager = () => {
    * AssignedShift から LockedAssignedShiftInput を作成する
    */
   const createLockedAssignedShiftInput = (assignedShifts: AssignedShift[]): LockedAssignedShiftInput[] => {
-    return assignedShifts.map(({ locked, ...rest }) => rest);
+    return assignedShifts
+      .filter(({ locked }) => locked)
+      .map(({ locked, ...rest }) => rest);
   };
 
   return {
