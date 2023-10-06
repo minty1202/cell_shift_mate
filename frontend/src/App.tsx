@@ -7,8 +7,6 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ja';
 dayjs.locale('ja');
 
-
-
 function App() {
 
   return (

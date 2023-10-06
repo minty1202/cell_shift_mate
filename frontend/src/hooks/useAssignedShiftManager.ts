@@ -22,7 +22,7 @@ export const useAssignedShiftManager = () => {
     shiftInput: ShiftInput[],
   }
   const syncAssignedShifts = ({ staffs, shiftInput }: SyncAssignedShiftsArgs) => {
-    if (staffs.length === 0 || shiftInput.length === 0) throw new Error('staffs または shiftInput が空です');
+    if (staffs.length === 0 || shiftInput.length === 0) return
 
     // 既存の assignedShifts を 検索しやすいように { date: { staffId: { isWorking: boolean, locked: boolean } } } の形にする
     // TODO: date と staffId の型を変更する
