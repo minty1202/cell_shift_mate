@@ -1,4 +1,4 @@
-import { StaffInput, ShiftInput, LockedShiftInput, AssignedShift } from '@/types';
+import { StaffInput, ShiftInput, LockedAssignedShiftInput, AssignedShift } from '@/types';
 import sampleStaffData from './sampleStaffData.json';
 
 const staffs: StaffInput[] = sampleStaffData;
@@ -9,16 +9,18 @@ const closedDays = [10, 21]
 // 忙しい日 とりあえず土日を想定
 const busyDays = [1, 2, 8, 9, 15, 16, 22, 23, 29, 30]
 
+// 30日間の配列を作成
+const dateArray = [...Array(30)]
+
 const createShiftInput = ({
   closedDays,
   busyDays,
+  dateArray
 }: {
   closedDays: number[];
   busyDays: number[];
+  dateArray: number[];
 }): ShiftInput[] => {
-  // 30日間の配列を作成
-  const dateArray = [...Array(30)]
-
   // requiredAttendanceTiers は 店長と当日責任者の 1 と 2 が必要
   const requiredAttendanceTiers = [1, 2]
 
@@ -78,7 +80,7 @@ const createShiftInput = ({
   })
 }
 
-const shifts = createShiftInput({ closedDays, busyDays })
+const shifts = createShiftInput({ closedDays, busyDays, dateArray })
 
 const createLockedShift = ({ closedDays, staffs }: { closedDays: number[]; staffs: StaffInput[] }) => {
   return closedDays.map((date) => {
@@ -92,7 +94,7 @@ const createLockedShift = ({ closedDays, staffs }: { closedDays: number[]; staff
   }).flat()
 }
 
-const lockedShift: LockedShiftInput[] = createLockedShift({ closedDays, staffs })
+const lockedShift: LockedAssignedShiftInput[] = createLockedShift({ closedDays, staffs })
 
 const createAssignedShifts = ({
   staffs,
@@ -101,7 +103,7 @@ const createAssignedShifts = ({
 }: {
   staffs: StaffInput[];
   shifts: ShiftInput[];
-  lockedShift: LockedShiftInput[];
+  lockedShift: LockedAssignedShiftInput[];
 }): AssignedShift[] => {
   const assignedShifts: AssignedShift[] = []
 
