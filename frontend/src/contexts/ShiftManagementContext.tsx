@@ -1,8 +1,8 @@
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, useMemo, ReactNode } from 'react';
 import { useAssignedShiftManager } from '@/hooks/useAssignedShiftManager';
 import { useShiftScheduleManager } from '@/hooks/useShiftScheduleManager';
 import { useStaffManager } from '@/hooks/useStaffManager';
-import { Staff, StaffInput, ShiftSchedule, AssignedShift, ShiftsInput } from '@/types';
+import { Staff, StaffInput, ShiftSchedule, ShiftInput, AssignedShift, ShiftsInput } from '@/types';
 import dayjs from 'dayjs';
 
 
@@ -13,6 +13,7 @@ import dayjs from 'dayjs';
  */
 interface State {
   staffs: Staff[];
+  shifts: ShiftInput[];
   shiftSchedules: ShiftSchedule;
   assignedShifts: AssignedShift[];
 }
@@ -97,12 +98,14 @@ export function ShiftManagementProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const shifts = useMemo(() => createShiftInput(shiftSchedules), [shiftSchedules]);
 
   return (
     <ShiftManagementContext.Provider
       value={{
         state: {
           staffs,
+          shifts,
           shiftSchedules,
           assignedShifts,
         },
