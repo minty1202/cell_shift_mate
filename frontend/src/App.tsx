@@ -1,13 +1,19 @@
 import { ShiftSchedulePage } from '@/pages/ShiftSchedulePage'
+
+import { ConfigProvider } from 'antd';
+
+import locale from 'antd/lib/locale/ja_JP';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ja';
-dayjs.locale('ja'); // dayjs のロケールを設定
+dayjs.locale('ja');
 
 function App() {
 
   return (
     <>
-      <ShiftSchedulePage />
+      <ConfigProvider locale={locale}>
+        <ShiftSchedulePage />
+      </ConfigProvider>
     </>
   )
 }

@@ -1,6 +1,7 @@
 import { useState, ReactElement } from "react";
 import { ShiftTable } from '@/components/Shift/ShiftTable'
 import { optimizeShift } from '@/api/shift/optimizeShiftApi'
+import { DatePicker } from '@/components/DatePicker/DatePicker'
 
 import { staffs as sampleStaffs, shifts as sampleShifts, lockedShift } from '@/sample/sample';
 
@@ -12,11 +13,7 @@ function ShiftSchedule() : ReactElement {
   const { staffs, shiftSchedules, shifts, assignedShifts } = state
 
   const handlePost = async () => {
-    const res = await optimizeShift({
-      staffs: sampleStaffs,
-      shifts: sampleShifts,
-      locked: lockedShift,
-    })
+    const res = await optimizeShift(actions.createShiftsInput())
     const data = await res.json()
     console.log(data)
     actions.updateAssignedShifts(data)
@@ -40,6 +37,8 @@ function ShiftSchedule() : ReactElement {
 
   return (
     <>
+      <DatePicker value={shiftSchedules.month} onChange={(month) => actions.updateShiftSchedule({ month })} />
+      <br />
       <button onClick={handelAddStaffs}>add staffs</button>
       <br />
       <button onClick={handlePost}>post</button>
