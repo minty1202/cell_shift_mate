@@ -85,11 +85,14 @@ const createShiftInput = (shiftSchedule: ShiftSchedule): ShiftInput[] => {
       requiredStaffCountOnBusy,
     });
 
+    const attendanceTiers = customRequiredAttendanceTiers ?? requiredAttendanceTiers
+    const attendanceTierCount = customRequiredAttendanceTierCount ?? requiredAttendanceTierCount
+
     return {
       date,
       requiredStaffCount: customRequiredStaffCount ?? requiredStaffCount,
-      requiredAttendanceTiers: customRequiredAttendanceTiers ?? requiredAttendanceTiers,
-      requiredAttendanceTierCount: customRequiredAttendanceTierCount ?? requiredAttendanceTierCount,
+      requiredAttendanceTiers: closedDays.includes(date) ? [] : attendanceTiers,
+      requiredAttendanceTierCount: closedDays.includes(date) ? 0 : attendanceTierCount,
     };
   });
 
@@ -158,7 +161,13 @@ export const useShiftScheduleManager = (initialShiftSchedule: InitialShiftSchedu
         shiftScheduleInput.closedDays = closedDays;
       }
 
-      // closedDays が送られた場合は該当する overrideRequiredAttendanceTiers, overrideRequiredAttendanceTierCount, overrideRequiredStaffCount を削除する
+      /**
+       * closedDays が送られた場合は該当する
+       * overrideRequiredAttendanceTiers,
+       * overrideRequiredAttendanceTierCount,
+       * overrideRequiredStaffCount
+       * を削除する
+       */
       if (shiftScheduleInput.closedDays) {
         const closedDays = shiftScheduleInput.closedDays;
         const {

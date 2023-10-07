@@ -11,6 +11,8 @@ import { TieredStaffCounter } from '@/components/TieredStaffCounter/TieredStaffC
 
 import { ShiftManagementProvider, useShiftManagement } from '@/contexts/ShiftManagementContext'
 
+import { RequiredStaffCount } from '@/components/RequiredStaffCount/RequiredStaffCount'
+
 function ShiftSchedule() : ReactElement {
   const { state, actions } = useShiftManagement()
   const { staffs, shiftSchedules, shifts, assignedShifts } = state
@@ -69,6 +71,10 @@ function ShiftSchedule() : ReactElement {
         onChange={handleUpdateShiftSchedule}
       />
       <br />
+      <RequiredStaffCount type='normal' value={shiftSchedules.requiredStaffCountOnNormal} onChange={(count) => actions.updateShiftSchedule({ requiredStaffCountOnNormal: count })} />
+      <br />
+      <RequiredStaffCount type='busy' value={shiftSchedules.requiredStaffCountOnBusy} onChange={(count) => actions.updateShiftSchedule({ requiredStaffCountOnBusy: count })} />
+      <br />
       <RequiredAttendanceTiers value={shiftSchedules.requiredAttendanceTiers} onChange={(tiers) => actions.updateShiftSchedule({ requiredAttendanceTiers: tiers })} />
       <br />
       <RequiredAttendanceTierCount value={shiftSchedules.requiredAttendanceTierCount} onChange={(count) => actions.updateShiftSchedule({ requiredAttendanceTierCount: count })} />
@@ -87,8 +93,19 @@ function ShiftSchedule() : ReactElement {
 }
 
 export function ShiftSchedulePage(): ReactElement {
+
+  // とりあえず初期値を入れておく
+  // 本来は staffs から計算したほうがいい
+  const initialShiftSchedules = {
+    busyDays: [2, 4],
+    requiredStaffCountOnNormal: 3,
+    requiredStaffCountOnBusy: 4,
+    requiredAttendanceTiers: [1, 2],
+    requiredAttendanceTierCount: 1,
+  }
+
   return (
-    <ShiftManagementProvider initialState={{shiftSchedule: { busyDays: [1,3] }}}>
+    <ShiftManagementProvider initialState={{shiftSchedule: initialShiftSchedules}}>
       <ShiftSchedule />
     </ShiftManagementProvider>
   )

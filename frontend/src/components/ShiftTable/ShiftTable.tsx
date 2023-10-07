@@ -9,31 +9,12 @@ import { grey } from '@ant-design/colors';
 
 const SHIFT_DATA_INDEX_PREFIX = 'shifts';
 
-const busyDaysStyle = {
-  backgroundColor: DayStatusColorMap['busy'][1],
-  color: DayStatusColorMap['busy'][4],
-}
-
-const closedDaysStyle = {
-  backgroundColor: DayStatusColorMap['closed'][1],
-  color: DayStatusColorMap['closed'][4],
-}
-
 const commonCellStyle = {
   padding: '8px 8px',
   minWidth: '20px',
   textAlign: 'center' as const,
 }
 
-const selectDayStatusStyle = ({ isClosed, isBusy }: { isClosed: boolean, isBusy: boolean }) => {
-  if (isClosed) {
-    return closedDaysStyle
-  }
-  if (isBusy) {
-    return busyDaysStyle
-  }
-  return {}
-}
 
 interface LockIconProps {
   isLocked: boolean;
@@ -84,6 +65,25 @@ interface HeaderCellProps {
 }
 
 function HeaderCell({ date, isClosed, isBusy }: HeaderCellProps) {
+  const busyDaysStyle = {
+    backgroundColor: DayStatusColorMap['busy'][1],
+    color: DayStatusColorMap['busy'][4],
+  }
+
+  const closedDaysStyle = {
+    backgroundColor: DayStatusColorMap['closed'][1],
+    color: DayStatusColorMap['closed'][4],
+  }
+
+  const selectDayStatusStyle = ({ isClosed, isBusy }: { isClosed: boolean, isBusy: boolean }) => {
+    if (isClosed) {
+      return closedDaysStyle
+    }
+    if (isBusy) {
+      return busyDaysStyle
+    }
+    return {}
+  }
 
   return (
     <div
@@ -103,6 +103,27 @@ interface CellProps {
 
 function Cell({ value }: CellProps) {
   const { isWorking, isClosed, isBusy, isLocked, onLockIconClick } = value
+
+  
+  const busyDaysStyle = {
+    backgroundColor: DayStatusColorMap['busy'][0],
+    color: DayStatusColorMap['busy'][4],
+  }
+
+  const closedDaysStyle = {
+    backgroundColor: DayStatusColorMap['closed'][0],
+    color: DayStatusColorMap['closed'][4],
+  }
+
+  const selectDayStatusStyle = ({ isClosed, isBusy }: { isClosed: boolean, isBusy: boolean }) => {
+    if (isClosed) {
+      return closedDaysStyle
+    }
+    if (isBusy) {
+      return busyDaysStyle
+    }
+    return {}
+  }
 
   return (
     <div
