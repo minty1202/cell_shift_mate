@@ -41,6 +41,11 @@ export function RequiredAttendanceTiers({ value, onChange }: RequiredAttendanceT
     return { label: TierNameMap[tier], value: tier }
   })
 
+  const handleChange = (value: number[]) => {
+    const sorted = value.sort((a, b) => a - b)
+    onChange(sorted)
+  }
+
   return (
     <>
       <Text strong>必須役職の選択</Text>
@@ -53,7 +58,7 @@ export function RequiredAttendanceTiers({ value, onChange }: RequiredAttendanceT
           tagRender={tagRender}
           style={{ width: '100%' }}
           placeholder="役職を選択選択してください"
-          onChange={onChange}
+          onChange={handleChange}
         />
       </Space>
     </>
