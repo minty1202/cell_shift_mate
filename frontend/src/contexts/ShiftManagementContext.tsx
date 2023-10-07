@@ -139,7 +139,7 @@ export const useShiftManagement = () => {
 /**
  * これらは以下のようにして使用する
  * 
- * const SampleComponent = () => {
+ * function SampleComponent() {
  *   const { state, actions } = useShiftManagement();
  *   const { staffs, shiftSchedules, assignedShifts } = state;
  * 
@@ -147,6 +147,14 @@ export const useShiftManagement = () => {
  *     <div>
  *       <button onClick={() => actions.updateStaff({ name: 'sample' })}>update</button>
  *     </div>
+ *   )
+ * }
+ * 
+ * function ParentComponent() {
+ *   return (
+ *     <ShiftManagementProvider>
+ *       <SampleComponent />
+ *     </ShiftManagementProvider>
  *   )
  * }
  */
