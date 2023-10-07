@@ -137,16 +137,20 @@ export const useShiftScheduleManager = ({ targetMonth }: ShiftScheduleManagerArg
         return;
       }
 
-      // closedDays が送られた際は、busyDays から削除する
-      if (shiftScheduleInput.closedDays) {
+      if (shiftScheduleInput.closedDays !== undefined && shiftScheduleInput.busyDays !== undefined) {
+        const { closedDays, busyDays } = shiftScheduleInput;
+        const newClosedDays = shiftScheduleInput.closedDays.filter((day) => !busyDays.includes(day));
+        const newBusyDays = busyDays.filter((day) => !closedDays.includes(day));
+        shiftScheduleInput.closedDays = newClosedDays;
+        shiftScheduleInput.busyDays = newBusyDays;
+      } else if (shiftScheduleInput.closedDays) {
+        // closedDays が送られた際は、busyDays から削除する
         const { closedDays: newClosedDays } = shiftScheduleInput;
         const { busyDays: currentBusyDays } = shiftSchedules;
         const busyDays = currentBusyDays.filter((day) => !newClosedDays.includes(day));
         shiftScheduleInput.busyDays = busyDays;
-      }
-
-      // busyDays が送られた際は、closedDays から削除する
-      if (shiftScheduleInput.busyDays) {
+      } else if (shiftScheduleInput.busyDays) {
+        // busyDays が送られた際は、closedDays から削除する
         const { busyDays: newBusyDays } = shiftScheduleInput;
         const { closedDays: currentClosedDays } = shiftSchedules;
         const closedDays = currentClosedDays.filter((day) => !newBusyDays.includes(day));
