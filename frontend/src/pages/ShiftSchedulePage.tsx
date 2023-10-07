@@ -82,7 +82,7 @@ function ShiftSchedule() : ReactElement {
 
 export function ShiftSchedulePage(): ReactElement {
   return (
-    <ShiftManagementProvider>
+    <ShiftManagementProvider initialState={{shiftSchedule: { busyDays: [1,3] }}}>
       <ShiftSchedule />
     </ShiftManagementProvider>
   )

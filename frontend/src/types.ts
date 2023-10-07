@@ -1,3 +1,13 @@
+/**
+ * PartialExceptFor
+ * T のうち K に含まれるプロパティは必須とし、それ以外は任意とする
+ * 
+ * ex) type Sample = { a: number, b: string, c: boolean }
+ *     type PartialExceptForSample = PartialExceptFor<Sample, 'a'>
+ *     // PartialExceptForSample = { a: number, b?: string, c?: boolean }
+ */
+export type PartialExceptFor<T, K extends keyof T> = Pick<T, K> & Partial<Omit<T, K>>;
+
 export type StaffInput = {
   id: number;
   tier: number;
