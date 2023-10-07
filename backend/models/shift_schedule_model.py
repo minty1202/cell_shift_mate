@@ -59,8 +59,8 @@ class ShiftScheduleModel:
             ScheduleAttributes(
                 date = shift.date,
                 staff_id = staff.id,
-                locked = locked_shifts_dict.get((shift.date, staff.id), False),
-                is_working_variable=self.model.NewBoolVar(f"shift_{shift.date}_{staff.id}")
+                locked = False,
+                is_working_variable = self.model.NewBoolVar(f"shift_{shift.date}_{staff.id}")
             )
             for shift in shifts
             for staff in staffs
@@ -69,6 +69,7 @@ class ShiftScheduleModel:
         for shift in shift_list:
             if (shift.date, shift.staff_id) in locked_shifts_dict:
                 self.model.Add(shift.is_working_variable == int(locked_shifts_dict[(shift.date, shift.staff_id)]))
+                shift.locked = True
 
         return shift_list
 
