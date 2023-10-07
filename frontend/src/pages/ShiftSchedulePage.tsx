@@ -1,14 +1,14 @@
-import { useState, ReactElement } from "react";
+import { ReactElement } from "react";
 import { ShiftTable } from '@/components/Shift/ShiftTable'
 import { optimizeShift } from '@/api/shift/optimizeShiftApi'
 import { DatePicker } from '@/components/DatePicker/DatePicker'
 
-import { staffs as sampleStaffs, shifts as sampleShifts, lockedShift } from '@/sample/sample';
+import { Tiers } from '@/constants'
+import { TieredStaffCounter } from '@/components/TieredStaffCounter/TieredStaffCounter'
 
 import { ShiftManagementProvider, useShiftManagement } from '@/contexts/ShiftManagementContext'
 
 function ShiftSchedule() : ReactElement {
-  const [staffCount, setStaffCount] = useState<number>(0)
   const { state, actions } = useShiftManagement()
   const { staffs, shiftSchedules, shifts, assignedShifts } = state
 
@@ -19,27 +19,37 @@ function ShiftSchedule() : ReactElement {
     actions.updateAssignedShifts(data)
   }
 
-  const handelAddStaffs = () => {
-    if (staffCount === sampleStaffs.length) {
-      alert('サンプルもうないで')
-      return 
-    }
+  const tierCounts = Tiers.map((tier) => {
+    const count = staffs.filter((s) => s.tier === tier).length
+    return { tier, count }
+  })
 
-    const staff = sampleStaffs[staffCount]
-    actions.addStaff({
-      id: staff.id,
-      tier: staff.tier,
-      desiredOffDays: staff.desiredOffDays,
-      workDays: staff.workDays,
+  /**
+   * tierCounts が変更されたときに、staffs を更新する
+   * カウントが増えたときは、新しいスタッフを追加する
+   * カウントが減ったときは、古いスタッフを削除する
+   */
+  const handleChangeTierCounts = (tierCounts: { tier: number, count: number }[]) => {
+    tierCounts.forEach((tc) => {
+      const staffsCount = staffs.filter((s) => s.tier === tc.tier).length
+      if (staffsCount === tc.count) return
+      
+      if (staffsCount < tc.count) {
+        actions.addStaff({
+          tier: tc.tier,
+        })
+      } else {
+        const staffsToDelete = staffs.filter((s) => s.tier === tc.tier).slice(0, staffsCount - tc.count)
+        staffsToDelete.forEach((s) => actions.removeStaff(s.id))
+      }
     })
-    setStaffCount(staffCount + 1)
   }
 
   return (
     <>
       <DatePicker value={shiftSchedules.month} onChange={(month) => actions.updateShiftSchedule({ month })} />
       <br />
-      <button onClick={handelAddStaffs}>add staffs</button>
+      <TieredStaffCounter value={tierCounts} onChange={handleChangeTierCounts} />
       <br />
       <button onClick={handlePost}>post</button>
       <ShiftTable

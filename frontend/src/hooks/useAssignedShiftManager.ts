@@ -8,8 +8,25 @@ import type { Staff, ShiftInput,  AssignedShift, LockedAssignedShiftInput } from
  * - AssignedShift を Staff, ShiftInput と同期させる
  * - AssignedShift から LockedAssignedShiftInput を作成
  */
-export const useAssignedShiftManager = () => {
-  const [assignedShifts, setAssignedShifts] = useState<AssignedShift[]>([]);
+interface UseAssignedShiftManagerArgs {
+  staffs: Staff[],
+  shiftInput: ShiftInput[],
+}
+
+export const useAssignedShiftManager = ({ staffs, shiftInput }: UseAssignedShiftManagerArgs) => {
+
+  const createDefaultAssignedShifts = (staffs: Staff[], shiftInput: ShiftInput[]): AssignedShift[] => {
+    return shiftInput.map((shift) => {
+      return staffs.map((staff) => ({
+        date: shift.date,
+        staffId: staff.id,
+        isWorking: false,
+        locked: false,
+      }));
+    }).flat().sort((a, b) => a.date - b.date);
+  }
+
+  const [assignedShifts, setAssignedShifts] = useState<AssignedShift[]>(createDefaultAssignedShifts(staffs, shiftInput));
 
   /**
    * Staff, ShiftInput から AssignedShift を作成, 更新する
