@@ -64,6 +64,7 @@ export function ShiftManagementProvider({ children }: { children: ReactNode }) {
       syncAssignedShifts({
         staffs: newStaffs,
         shiftInput: createShiftInput(shiftSchedules),
+        closedDays: shiftSchedules.closedDays,
       });
     });
   }
@@ -73,6 +74,7 @@ export function ShiftManagementProvider({ children }: { children: ReactNode }) {
       syncAssignedShifts({
         staffs: newStaffs,
         shiftInput: createShiftInput(shiftSchedules),
+        closedDays: shiftSchedules.closedDays,
       });
     });
   }
@@ -82,6 +84,7 @@ export function ShiftManagementProvider({ children }: { children: ReactNode }) {
       syncAssignedShifts({
         staffs,
         shiftInput: createShiftInput(newShiftSchedules),
+        closedDays: newShiftSchedules.closedDays,
       });
     });
   }
