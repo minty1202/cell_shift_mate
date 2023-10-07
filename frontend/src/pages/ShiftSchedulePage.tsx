@@ -1,5 +1,5 @@
 import { ReactElement } from "react";
-import { ShiftTable } from '@/components/Shift/ShiftTable'
+import { ShiftTable } from '@/components/ShiftTable/ShiftTable'
 import { optimizeShift } from '@/api/shift/optimizeShiftApi'
 import { DatePicker } from '@/components/DatePicker/DatePicker'
 import { DaysStatusSelector } from '@/components/DaysStatusSelector/DaysStatusSelector'
