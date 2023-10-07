@@ -31,17 +31,20 @@ export const useAssignedShiftManager = ({ staffs, shiftInput }: UseAssignedShift
   /**
    * Staff, ShiftInput, closedDays から AssignedShift を作成, 更新する
    * closedDays に含まれる日付は isWorking を false にし、locked を true にする
+   * closedDays から除外された場合は、locked を false にする
    * 
    * @param {Staff[]} staffs - Staff のリスト
    * @param {ShiftInput[]} shiftInput - ShiftInput のリスト
    * @param {number[]} closedDays - 休業日の日付のリスト
+   * @param {number[]} oldClosedDays - 変更前の休業日の日付のリスト
    */
   type SyncAssignedShiftsArgs = {
     staffs: Staff[],
     shiftInput: ShiftInput[],
     closedDays: number[],
+    oldClosedDays: number[],
   }
-  const syncAssignedShifts = ({ staffs, shiftInput, closedDays }: SyncAssignedShiftsArgs) => {
+  const syncAssignedShifts = ({ staffs, shiftInput, closedDays, oldClosedDays }: SyncAssignedShiftsArgs) => {
     if (staffs.length === 0 || shiftInput.length === 0) return
 
     // 既存の assignedShifts を 検索しやすいように { date: { staffId: { isWorking: boolean, locked: boolean } } } の形にする
@@ -83,15 +86,26 @@ export const useAssignedShiftManager = ({ staffs, shiftInput }: UseAssignedShift
         }
       });
     }).flat().sort((a, b) => a.date - b.date);
+
+    // 古い closedDays から除外された場合は、locked を false にする
+    const removedClosedDays = oldClosedDays.filter((day) => !closedDays.includes(day));
+    removedClosedDays.forEach((day) => {
+      syncedAssignedShifts.forEach((assignedShift) => {
+        if (assignedShift.date === day) {
+          assignedShift.locked = false;
+        }
+      });
+    });
+
     setAssignedShifts(syncedAssignedShifts);
   }
 
   /**
    * AssignedShift の単体を更新する
    * 
-   * @param {AssignedShift} assignedShift - 更新する AssignedShift
+   * @param {Partial<AssignedShift>} assignedShift - 更新する AssignedShift
    */
-  const updateAssignedShiftOne = (assignedShift: AssignedShift) => {
+  const updateAssignedShiftOne = (assignedShift: Partial<AssignedShift>) => {
     const newAssignedShifts = assignedShifts.map((state) => {
       if (state.date === assignedShift.date && state.staffId === assignedShift.staffId) {
         return {
