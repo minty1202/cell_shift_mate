@@ -19,7 +19,7 @@ interface State {
 }
 
 interface Actions {
-  addStaff: (staff: StaffInput) => void;
+  addStaff: (input: Pick<StaffInput, 'tier'>) => void;
   removeStaff: (staffId: Staff['id']) => void;
   updateStaff: (staff: Staff) => void;
   updateShiftSchedule: (shiftSchedule: Partial<ShiftSchedule>) => void;
@@ -57,10 +57,10 @@ export function ShiftManagementProvider({ children }: { children: ReactNode }) {
     updateAssignedShiftOne,
     updateAssignedShifts,
     createLockedAssignedShiftInput,
-  } = useAssignedShiftManager();
+  } = useAssignedShiftManager({ staffs, shiftInput: createShiftInput(shiftSchedules) });
 
-  const addStaff = (staff: StaffInput) => {
-    addStaffCore(staff, newStaffs => {
+  const addStaff = (input: Pick<StaffInput, 'tier'>) => {
+    addStaffCore(input, newStaffs => {
       syncAssignedShifts({
         staffs: newStaffs,
         shiftInput: createShiftInput(shiftSchedules),

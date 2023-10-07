@@ -1,24 +1,42 @@
 import { useState } from 'react';
-import { TierNameMap } from '@/constants';
+import { Tier, TierNameMap } from '@/constants';
 import type { Staff, StaffInput } from '@/types';
 
 /**
  * Staff を扱うためのカスタムフック
  */
 export const useStaffManager = () => {
-  const [staffs, setStaffs] = useState<Staff[]>([]);
+
+  const defaultWorkDays = 20
+  const createDefaultStaffs = (workDays: number): Staff[] => {
+    const tierArray = Object.values(Tier);
+
+    return tierArray.map((tier, i) => {
+      return {
+        id: i + 1,
+        tier,
+        workDays,
+        desiredOffDays: [],
+        name: `${TierNameMap[tier]} ${i + 1}`,
+      }
+    });
+  }
+
+  const [staffs, setStaffs] = useState<Staff[]>(createDefaultStaffs(defaultWorkDays));
   /**
    * Staff を作成する、作成した Staffs をオプションのコールバックで返す
    * 
-   * @param {Omit<StaffInput, 'id'>} staffInput - 作成する Staff の情報
+   * @param {Pick<StaffInput, 'tier'>} input - 作成する Staff の情報
    * @param {(newStaffs: Staff[]) => void} [callback] - Staff 作成後に実行する callback
    */
-  const addStaff = (staffInput: Omit<StaffInput, 'id'>, callback?: (newStaffs: Staff[]) => void) => {
+  const addStaff = (input: Pick<StaffInput, 'tier'>, callback?: (newStaffs: Staff[]) => void) => {
     const staffId = staffs.length + 1;
     const staff: Staff = {
-      ...staffInput,
+      ...input,
       id: staffId,
-      name: `${TierNameMap[staffInput.tier]} ${staffId}`
+      desiredOffDays: [],
+      workDays: defaultWorkDays,
+      name: `${TierNameMap[input.tier]} ${staffId}`
     };
 
     const newStaffs = [...staffs, staff];
