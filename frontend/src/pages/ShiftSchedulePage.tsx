@@ -94,6 +94,10 @@ function ShiftSchedule() : ReactElement {
 
 export function ShiftSchedulePage(): ReactElement {
 
+  const initialStaffManagement = {
+    workDays: 20
+  }
+
   // とりあえず初期値を入れておく
   // 本来は staffs から計算したほうがいい
   const initialShiftSchedules = {
@@ -104,8 +108,13 @@ export function ShiftSchedulePage(): ReactElement {
     requiredAttendanceTierCount: 1,
   }
 
+  const initialState = {
+    staffManagement: initialStaffManagement,
+    shiftSchedule: initialShiftSchedules
+  }
+
   return (
-    <ShiftManagementProvider initialState={{shiftSchedule: initialShiftSchedules}}>
+    <ShiftManagementProvider initialState={initialState}>
       <ShiftSchedule />
     </ShiftManagementProvider>
   )

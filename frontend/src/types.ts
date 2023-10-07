@@ -15,6 +15,15 @@ export type StaffInput = {
   workDays: number;
 };
 
+export type Staff = StaffInput & {
+  name: string;
+};
+
+export type StaffManagement = {
+  workDays: number;
+  staffs: Staff[];
+}
+
 export type ShiftInput = {
   date: number;
   requiredStaffCount: number;
@@ -53,10 +62,6 @@ export type ShiftSchedule = {
   overrideRequiredAttendanceTierCount?: { [key: number]: number };
   overrideRequiredStaffCount?: { [key: number]: number };
 }
-
-export type Staff = StaffInput & {
-  name: string;
-};
 
 export type AssignedShift = {
   date: number;

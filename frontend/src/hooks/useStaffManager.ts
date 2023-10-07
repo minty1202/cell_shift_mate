@@ -1,28 +1,53 @@
-import { useState } from 'react';
-import { Tier, TierNameMap } from '@/constants';
-import type { Staff, StaffInput } from '@/types';
+import { useState, useMemo } from 'react';
+import { Tiers, TierNameMap } from '@/constants';
+import type { Staff, StaffInput, StaffManagement, PartialExceptFor } from '@/types';
+
+type InitialStaffManagement = PartialExceptFor<StaffManagement, 'workDays'>;
 
 /**
  * Staff を扱うためのカスタムフック
+ * 
+ * @param {InitialStaffManagement} [initialStaffManagement] - 初期値
  */
-export const useStaffManager = () => {
+export const useStaffManager = (initialStaffManagement: InitialStaffManagement) => {
 
-  const defaultWorkDays = 20
-  const createDefaultStaffs = (workDays: number): Staff[] => {
-    const tierArray = Object.values(Tier);
+  const initializeStaffManagement = (initialStaffManagement: InitialStaffManagement): StaffManagement => {
+    const { workDays } = initialStaffManagement;
 
-    return tierArray.map((tier, i) => {
+    // とりあえずの初期値を作成
+    const staffs = Tiers.map((tier, i) => {
       return {
         id: i + 1,
         tier,
         workDays,
         desiredOffDays: [],
         name: `${TierNameMap[tier]} ${i + 1}`,
+        custom: {}
+      }
+    });
+
+    return {
+      workDays,
+      staffs,
+    }
+  }
+
+  const [staffManagement, setStaffManagement] = useState<StaffManagement>(initializeStaffManagement(initialStaffManagement));
+
+  const createStaffs = (inputStaffManagement?: StaffManagement): Staff[] => {
+    const { workDays, staffs } = inputStaffManagement ?? staffManagement;
+
+    return staffs.map((staff) => {
+      return {
+        id: staff.id,
+        name: staff.name,
+        tier: staff.tier,
+        desiredOffDays: staff.desiredOffDays,
+        workDays: staff.workDays ?? workDays,
       }
     });
   }
 
-  const [staffs, setStaffs] = useState<Staff[]>(createDefaultStaffs(defaultWorkDays));
   /**
    * Staff を作成する、作成した Staffs をオプションのコールバックで返す
    * 
@@ -30,21 +55,27 @@ export const useStaffManager = () => {
    * @param {(newStaffs: Staff[]) => void} [callback] - Staff 作成後に実行する callback
    */
   const addStaff = (input: Pick<StaffInput, 'tier'>, callback?: (newStaffs: Staff[]) => void) => {
+    const { workDays, staffs } = staffManagement;
+
     const staffId = staffs.length + 1;
-    const staff: Staff = {
+    const staff = {
       ...input,
       id: staffId,
       desiredOffDays: [],
-      workDays: defaultWorkDays,
-      name: `${TierNameMap[input.tier]} ${staffId}`
+      name: `${TierNameMap[input.tier]} ${staffId}`,
+      workDays: workDays,
     };
 
     const newStaffs = [...staffs, staff];
     const sorted = newStaffs.sort((a, b) => a.tier - b.tier);
-    setStaffs(sorted);
+    const newStaffManagement = {
+      ...staffManagement,
+      staffs: sorted,
+    }
+    setStaffManagement(newStaffManagement);
 
     // コールバックが提供されている場合、新しいスタッフリストを渡して実行する
-    callback?.(sorted);
+    callback?.(createStaffs(newStaffManagement));
   }
 
   /**
@@ -53,6 +84,8 @@ export const useStaffManager = () => {
    * @param {Staff} staff - 更新する Staff の情報
    */
   const updateStaff = (staff: Staff) => {
+    const { staffs } = staffManagement;
+
     const newStaffs = staffs.map((state) => {
       if (state.id === staff.id) {
         return {
@@ -64,7 +97,10 @@ export const useStaffManager = () => {
       }
     });
     const sorted = newStaffs.sort((a, b) => a.tier - b.tier);
-    setStaffs(sorted);
+    setStaffManagement((prev) => ({
+      ...prev,
+      staffs: sorted,
+    }));
   }
 
   /**
@@ -74,19 +110,26 @@ export const useStaffManager = () => {
    * @param {(newStaffs: Staff[]) => void} [callback] - Staff 削除後に実行する callback
    */
   const removeStaff = (staffId: number, callback?: (newStaffs: Staff[]) => void) => {
+    const { staffs } = staffManagement;
     const newStaffs = staffs.filter((staff) => staff.id !== staffId);
-    setStaffs(newStaffs);
+    const newStaffManagement = {
+      ...staffManagement,
+      staffs: newStaffs,
+    }
+    setStaffManagement(newStaffManagement);
 
     // コールバックが提供されている場合、新しいスタッフリストを渡して実行する
-    callback?.(newStaffs);
+    callback?.(createStaffs(newStaffManagement));
   }
 
-  const createStaffsInput = (staffs: Staff[]) => {
+  const createStaffsInput = (inputStaffManagement?: StaffManagement): StaffInput[] => {
+    const staffs = createStaffs(inputStaffManagement ?? staffManagement);
     return staffs.map(({ name, ...rest }) => rest);
   }
 
   return {
-    staffs,
+    staffManagement,
+    staffs: useMemo(() => createStaffs(), [staffManagement]),
     addStaff,
     updateStaff,
     removeStaff,
