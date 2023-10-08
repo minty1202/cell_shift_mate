@@ -2,6 +2,7 @@ import { ReactElement } from "react";
 import { ShiftTable } from '@/components/Shift/ShiftTable'
 import { optimizeShift } from '@/api/shift/optimizeShiftApi'
 import { DatePicker } from '@/components/DatePicker/DatePicker'
+import { DaysStatusSelector } from '@/components/DaysStatusSelector/DaysStatusSelector'
 
 import { Tiers } from '@/constants'
 import { TieredStaffCounter } from '@/components/TieredStaffCounter/TieredStaffCounter'
@@ -45,11 +46,22 @@ function ShiftSchedule() : ReactElement {
     })
   }
 
+  const handleUpdateShiftSchedule = (days: { closedDays: number[], busyDays: number[] }) => {
+    actions.updateShiftSchedule(days)
+  }
+
   return (
     <>
       <DatePicker value={shiftSchedules.month} onChange={(month) => actions.updateShiftSchedule({ month })} />
       <br />
       <TieredStaffCounter value={tierCounts} onChange={handleChangeTierCounts} />
+      <br />
+      <DaysStatusSelector
+        month={shiftSchedules.month}
+        closedDays={shiftSchedules.closedDays}
+        busyDays={shiftSchedules.busyDays}
+        onChange={handleUpdateShiftSchedule}
+      />
       <br />
       <button onClick={handlePost}>post</button>
       <ShiftTable

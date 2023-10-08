@@ -62,3 +62,7 @@ export type ShiftsInput = {
   shifts: ShiftInput[],
   locked: LockedAssignedShiftInput[]
 }
+
+export type TierKeys = 'Manager' | 'DayManager' | 'Upper' | 'Middle' | 'Junior';
+
+export type DayStatus = 'closed' | 'busy';

@@ -1,36 +1,75 @@
 import { Staff, ShiftInput, AssignedShift } from '@/types';
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-
-
-// const Tier = {
-//   Manager: 1,
-//   DayManager: 2,
-//   Upper: 3,
-//   Middle: 4,
-//   Junior: 5,
-// };
-
-// const TierNameMap = {
-//   [Tier.Manager]: '店長クラス',
-//   [Tier.DayManager]: '当日責任者',
-//   [Tier.Upper]: '優秀層',
-//   [Tier.Middle]: '一般層',
-//   [Tier.Junior]: '新人層',
-// };
+import { DayStatusColorMap } from '@/constants';
+import './ShiftTable.module.css'
 
 const SHIFT_DATA_INDEX_PREFIX = 'shifts';
+
+const busyDaysStyle = {
+  backgroundColor: DayStatusColorMap['busy'][1],
+  color: DayStatusColorMap['busy'][4],
+}
+
+const closedDaysStyle = {
+  backgroundColor: DayStatusColorMap['closed'][1],
+  color: DayStatusColorMap['closed'][4],
+}
+
+const selectDayStatusStyle = ({ isClosed, isBusy }: { isClosed: boolean, isBusy: boolean }) => {
+  if (isClosed) {
+    return closedDaysStyle
+  }
+  if (isBusy) {
+    return busyDaysStyle
+  }
+  return {}
+}
+
 interface ShiftDataType {
   [key: string]: {
     isWorking: boolean;
+    isClosed: boolean;
+    isBusy: boolean;
   }
 }
 
-function Cell({ value }: { value: ShiftDataType }) {
+interface HeaderCellProps {
+  date: number;
+  isClosed: boolean;
+  isBusy: boolean;
+}
+
+function HeaderCell({ date, isClosed, isBusy }: HeaderCellProps) {
+
   return (
-    <>
-      {value.isWorking ? '○' : '×'}
-    </>
+    <div
+      style={{
+        ...selectDayStatusStyle({ isClosed, isBusy }),
+        padding: '8px 8px',
+      }}
+    >
+      {date}
+    </div>
+  );
+}
+
+interface CellProps {
+  value: ShiftDataType[keyof ShiftDataType];
+}
+
+function Cell({ value }: CellProps) {
+  const { isWorking, isClosed, isBusy } = value
+
+  return (
+    <div
+    style={{
+      ...selectDayStatusStyle({ isClosed, isBusy }),
+      padding: '8px 8px',
+    }}
+    >
+      {isWorking ? '○' : '×'}
+    </div>
   );
 }
 
@@ -42,24 +81,50 @@ interface DataType {
   shifts: ShiftDataType;
 }
 
-const createColumns = (shifts: ShiftInput[]): ColumnsType<DataType> => {
+interface CreateColumnsArgs {
+  shifts: ShiftInput[];
+  closedDays: number[];
+  busyDays: number[];
+}
+
+const createColumns = ({ shifts, closedDays, busyDays}: CreateColumnsArgs): ColumnsType<DataType> => {
+
+  const dateWithDayStatus = shifts.map((shift) => {
+    const isClosed = closedDays.some((day) => day === shift.date);
+    const isBusy = busyDays.some((day) => day === shift.date);
+
+    return {
+      date: shift.date,
+      isClosed,
+      isBusy,
+    };
+  })
+  
   const columns: ColumnsType<DataType> = [
     {
       title: 'Staff',
       dataIndex: 'name',
       key: 'name',
+      render: (value: string) => <div style={{ padding: '8px 8px'}}>{value}</div>,
     },
-    ...shifts.map((shift) => ({
-      title: shift.date,
+    ...dateWithDayStatus.map((shift) => ({
+      title: () => <HeaderCell {...shift} />,
       dataIndex: ['shifts', addShiftDataIndexPrefix(shift.date)],
       key: shift.date,
-      render: (value: ShiftDataType) => <Cell value={value} />,
+      render: (value: ShiftDataType[keyof ShiftDataType]) => <Cell value={value} />,
     })),
   ];
   return columns;
 }
 
-const createData = (staffs: Staff[], assignedShifts: AssignedShift[]) => {
+interface CreateDataArgs {
+  staffs: Staff[];
+  assignedShifts: AssignedShift[];
+  closedDays: number[];
+  busyDays: number[];
+}
+
+const createData = ({ staffs, assignedShifts, closedDays, busyDays }: CreateDataArgs): DataType[] => {
   return staffs.map((staff) => {
     const myShifts = assignedShifts.filter((assignedShift) => assignedShift.staffId === staff.id);
 
@@ -67,13 +132,15 @@ const createData = (staffs: Staff[], assignedShifts: AssignedShift[]) => {
 
     const shifts = sortedShifts.reduce((acc: ShiftDataType, shift) => {
       acc[addShiftDataIndexPrefix(shift.date)] = {
-        isWorking:  shift.isWorking
+        isWorking:  shift.isWorking,
+        isClosed: closedDays.some((day) => day === shift.date),
+        isBusy: busyDays.some((day) => day === shift.date),
       };
       return acc;
     }, {});
 
     return {
-      name: `Staff ${staff.name}`,
+      name: staff.name,
       shifts,
       key: staff.id,
     };
@@ -89,15 +156,15 @@ interface ShiftTableProps {
 }
 
 export function ShiftTable({
-  // closedDays,
-  // busyDays,
+  closedDays,
+  busyDays,
   staffs,
   shifts,
   assignedShifts,
 }: ShiftTableProps) {
 
-  const columns = createColumns(shifts);
-  const data = createData(staffs, assignedShifts);
+  const columns = createColumns({ shifts, closedDays, busyDays });
+  const data = createData({ staffs, assignedShifts, closedDays, busyDays });
 
   return (
     <Table
