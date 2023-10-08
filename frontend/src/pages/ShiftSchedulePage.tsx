@@ -1,5 +1,5 @@
 import { ReactElement } from "react";
-import { ShiftTable } from '@/components/Shift/ShiftTable'
+import { ShiftTable } from '@/components/ShiftTable/ShiftTable'
 import { optimizeShift } from '@/api/shift/optimizeShiftApi'
 import { DatePicker } from '@/components/DatePicker/DatePicker'
 import { DaysStatusSelector } from '@/components/DaysStatusSelector/DaysStatusSelector'
@@ -50,6 +50,10 @@ function ShiftSchedule() : ReactElement {
     actions.updateShiftSchedule(days)
   }
 
+  const handleChangeLock = ({ staffId, date, isLocked }: { staffId: number, date: number, isLocked: boolean }) => {
+    actions.updateAssignedShiftOne({ staffId, date, locked: isLocked })
+  }
+
   return (
     <>
       <DatePicker value={shiftSchedules.month} onChange={(month) => actions.updateShiftSchedule({ month })} />
@@ -70,6 +74,7 @@ function ShiftSchedule() : ReactElement {
         staffs={staffs}
         shifts={shifts}
         assignedShifts={assignedShifts}
+        onChangeLock={handleChangeLock}
       />
     </>
   )

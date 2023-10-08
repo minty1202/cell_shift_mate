@@ -18,12 +18,13 @@ interface State {
   assignedShifts: AssignedShift[];
 }
 
+// TODO: どこかで直接引数情報を取得できるように変更する
 interface Actions {
   addStaff: (input: Pick<StaffInput, 'tier'>) => void;
   removeStaff: (staffId: Staff['id']) => void;
   updateStaff: (staff: Staff) => void;
   updateShiftSchedule: (shiftSchedule: Partial<ShiftSchedule>) => void;
-  updateAssignedShiftOne: (assignedShift: AssignedShift) => void;
+  updateAssignedShiftOne: (assignedShift: Partial<AssignedShift>) => void;
   updateAssignedShifts: (assignedShifts: AssignedShift[]) => void;
   createShiftsInput: () => ShiftsInput;
 }
@@ -65,6 +66,7 @@ export function ShiftManagementProvider({ children }: { children: ReactNode }) {
         staffs: newStaffs,
         shiftInput: createShiftInput(shiftSchedules),
         closedDays: shiftSchedules.closedDays,
+        oldClosedDays: shiftSchedules.closedDays,
       });
     });
   }
@@ -75,16 +77,18 @@ export function ShiftManagementProvider({ children }: { children: ReactNode }) {
         staffs: newStaffs,
         shiftInput: createShiftInput(shiftSchedules),
         closedDays: shiftSchedules.closedDays,
+        oldClosedDays: shiftSchedules.closedDays,
       });
     });
   }
 
-  const updateShiftSchedule = (shiftSchedule: Partial<ShiftSchedule>) => {
-    updateShiftScheduleCore(shiftSchedule, newShiftSchedules => {
+  const updateShiftSchedule = (shiftScheduleInput: Partial<ShiftSchedule>) => {
+    updateShiftScheduleCore(shiftScheduleInput, newShiftSchedules => {
       syncAssignedShifts({
         staffs,
         shiftInput: createShiftInput(newShiftSchedules),
         closedDays: newShiftSchedules.closedDays,
+        oldClosedDays: shiftSchedules.closedDays,
       });
     });
   }
@@ -139,7 +143,7 @@ export const useShiftManagement = () => {
 /**
  * これらは以下のようにして使用する
  * 
- * const SampleComponent = () => {
+ * function SampleComponent() {
  *   const { state, actions } = useShiftManagement();
  *   const { staffs, shiftSchedules, assignedShifts } = state;
  * 
@@ -147,6 +151,14 @@ export const useShiftManagement = () => {
  *     <div>
  *       <button onClick={() => actions.updateStaff({ name: 'sample' })}>update</button>
  *     </div>
+ *   )
+ * }
+ * 
+ * function ParentComponent() {
+ *   return (
+ *     <ShiftManagementProvider>
+ *       <SampleComponent />
+ *     </ShiftManagementProvider>
  *   )
  * }
  */
