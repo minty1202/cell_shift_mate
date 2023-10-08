@@ -1,34 +1,7 @@
 import { ReactElement } from "react"
-import { Input as AntdInput, Space, Button, ConfigProvider } from 'antd';
+import { Space, ConfigProvider } from 'antd';
+import { InputCounter } from '@/components/common/InputCounter'
 import { TierNameMap, TierColorMap } from '@/constants'
-
-
-interface AddonProps {
-  type: 'before' | 'after'
-  tier: number
-  disabled?: boolean
-  onClick: () => void
-}
-
-function AddonButton({ type, tier, disabled = false, onClick }: AddonProps) {
-  const addonNameMap = {
-    before: '-',
-    after: '+',
-  }
-
-  return (
-    <Button
-      disabled={disabled}
-      onClick={onClick}
-      style={{
-        backgroundColor: !disabled ? TierColorMap[tier][1] : undefined,
-        color: !disabled ? TierColorMap[tier][4] : undefined,
-      }}
-    >
-      {addonNameMap[type]}
-    </Button>
-  )
-}
 
 interface InputProps {
   tier: number
@@ -48,6 +21,8 @@ function Input({  tier, value, onChange }: InputProps) {
         components: {
           Button: {
             defaultBorderColor: TierColorMap[tier][1],
+            defaultColor: TierColorMap[tier][4],
+            defaultBg: TierColorMap[tier][0],
           },
           Input: {
             colorBorder: TierColorMap[tier][1],
@@ -57,24 +32,12 @@ function Input({  tier, value, onChange }: InputProps) {
     >
       <Space>
         <span>{TierNameMap[tier]}</span>
-        <Space.Compact>
-          <AddonButton
-            type="before"
-            tier={tier}
-            disabled={value === 0}
-            onClick={() => onChange({ tier, count: value - 1 })}
-          />
-          <AntdInput 
-            readOnly
-            value={value}
-            min={0}
-            style={{
-              textAlign: 'right',
-              width: '40px',
-            }}
-          />
-          <AddonButton type="after" tier={tier} onClick={() => onChange({ tier, count: value + 1 })} />
-        </Space.Compact>
+        <InputCounter
+          value={value}
+          onChange={(num) => onChange({ tier, count: num })}
+          size="small"
+          min={0}
+        />
       </Space>
       </ConfigProvider>
     </>

@@ -34,7 +34,23 @@ export const ShiftManagementContext = createContext<{
   actions: Actions;
 } | undefined>(undefined);
 
-export function ShiftManagementProvider({ children }: { children: ReactNode }) {
+interface ShiftManagementProviderProps {
+  children: ReactNode;
+  initialState? :{
+    shiftSchedule?: Partial<ShiftSchedule>;
+  };
+}
+
+export function ShiftManagementProvider({ 
+  children,
+  initialState: {
+    shiftSchedule: initialShiftSchedule = {}
+  } = {
+    shiftSchedule: {}
+  }
+}: ShiftManagementProviderProps) {
+
+
 
   const {
     staffs,
@@ -44,13 +60,17 @@ export function ShiftManagementProvider({ children }: { children: ReactNode }) {
     createStaffsInput,
   } = useStaffManager();
 
-  // shiftSchedules の対象月の初期値は、翌月
-  const defaultMonth = dayjs().add(1, 'month').format('YYYY-MM');
+  const populatedInitialShiftSchedule   = {
+    // shiftSchedules の対象月の初期値は、翌月
+    month: dayjs().add(1, 'month').format('YYYY-MM'),
+    ...initialShiftSchedule
+  };
+
   const {
     shiftSchedules,
     updateShiftSchedule: updateShiftScheduleCore,
     createShiftInput,
-  } = useShiftScheduleManager({ targetMonth: defaultMonth });
+  } = useShiftScheduleManager(populatedInitialShiftSchedule );
 
   const {
     assignedShifts,

@@ -221,7 +221,7 @@ const DaySelector = ({ month, target, closedDays, busyDays, onChange }: DaySelec
           </Popover>
           {dayStatus.days.map((d) => (
             <Tag key={`${target}-${month}-${d}`}>
-              <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+              <div style={{display: 'flex'}}>
                 {d}日&nbsp;
                 <CloseCircleOutlined
                   style={{ cursor: 'pointer' }}

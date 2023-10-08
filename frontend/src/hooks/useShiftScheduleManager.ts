@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Tier } from '@/constants';
-import type { ShiftInput, ShiftSchedule } from '@/types';
+import type { PartialExceptFor, ShiftInput, ShiftSchedule } from '@/types';
 import dayjs from 'dayjs';
 
 /**
@@ -96,9 +96,7 @@ const createShiftInput = (shiftSchedule: ShiftSchedule): ShiftInput[] => {
   return shiftInput;
 }
 
-interface ShiftScheduleManagerArgs {
-  targetMonth: string; // YYYY-MM
-}
+type InitialShiftSchedule = PartialExceptFor<ShiftSchedule, 'month'>;
 
 /**
  * ShiftSchedule を扱うためのカスタムフック
@@ -106,22 +104,22 @@ interface ShiftScheduleManagerArgs {
  * 主に以下を行う
  * - ShiftSchedule の 作成, 更新
  * - ShiftSchedule から ShiftInput を作成する createShiftInput を export
+ * 
+ * @param {InitialShiftSchedule} initialShiftSchedule - 初期値
  */
-export const useShiftScheduleManager = ({ targetMonth }: ShiftScheduleManagerArgs) => {
+export const useShiftScheduleManager = (initialShiftSchedule: InitialShiftSchedule) => {
 
-  const createDefaultShiftSchedule = (month: string): ShiftSchedule => {
-    return {
-      month,
-      closedDays: [],
-      busyDays: [],
-      requiredAttendanceTiers: [Tier.Manager, Tier.DayManager],
-      requiredAttendanceTierCount: 0,
-      requiredStaffCountOnNormal: 1,
-      requiredStaffCountOnBusy: 1,
-    };
+  const initializedShiftSchedule: ShiftSchedule = {
+    closedDays: [],
+    busyDays: [],
+    requiredAttendanceTiers: [Tier.Manager, Tier.DayManager],
+    requiredAttendanceTierCount: 0,
+    requiredStaffCountOnNormal: 1,
+    requiredStaffCountOnBusy: 1,
+    ...initialShiftSchedule,
   }
 
-  const [shiftSchedules, setShiftSchedules] = useState<ShiftSchedule>(createDefaultShiftSchedule(targetMonth));
+  const [shiftSchedules, setShiftSchedules] = useState<ShiftSchedule>(initializedShiftSchedule);
 
   /**
    * ShiftSchedule を更新する、更新した ShiftSchedule をオプションのコールバックで返す
@@ -133,7 +131,10 @@ export const useShiftScheduleManager = ({ targetMonth }: ShiftScheduleManagerArg
     const updateShiftSchedule  = (shiftScheduleInput: Partial<ShiftSchedule>, callback?: (newShiftSchedule: ShiftSchedule) => void) => {
       // 月が変わる際は、リセットする
       if (shiftScheduleInput.month && shiftScheduleInput.month !== shiftScheduleInput.month) {
-        setShiftSchedules(createDefaultShiftSchedule(shiftScheduleInput.month));
+        setShiftSchedules({
+          ...initializedShiftSchedule,
+          month: shiftScheduleInput.month,
+        })
         return;
       }
 
