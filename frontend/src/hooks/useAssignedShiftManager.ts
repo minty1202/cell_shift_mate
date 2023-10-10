@@ -11,22 +11,69 @@ import type { Staff, ShiftInput,  AssignedShift, LockedAssignedShiftInput } from
 interface UseAssignedShiftManagerArgs {
   staffs: Staff[],
   shiftInput: ShiftInput[],
+  closedDays: number[],
 }
 
-export const useAssignedShiftManager = ({ staffs, shiftInput }: UseAssignedShiftManagerArgs) => {
+export const useAssignedShiftManager = ({ staffs, shiftInput, closedDays }: UseAssignedShiftManagerArgs) => {
 
-  const createDefaultAssignedShifts = (staffs: Staff[], shiftInput: ShiftInput[]): AssignedShift[] => {
+  type CalculateDayStatusArgs = {
+    date: number,
+    target: 'isWorking' | 'locked',
+    closedDays: number[],
+    current?: boolean,
+  }
+
+  const calculateClosedDayStatus = ({ date, target, closedDays, current }: CalculateDayStatusArgs) => {
+    const overrideOnClosedDayMap = {
+      isWorking: false,
+      locked: true,
+    };
+
+    if (closedDays.includes(date)) {
+      return overrideOnClosedDayMap[target];
+    }
+    return current ?? false;
+  }
+
+  /**
+   * Staff, ShiftInput から AssignedShift を作成する
+   * calculateDayStatus を関数として渡し、date と staffId から isWorking と locked を計算する
+   * 
+   * @param {Staff[]} staffs - Staff のリスト
+   * @param {ShiftInput[]} shiftInput - ShiftInput のリスト
+   * @param {function} calculateClosedDayStatus - 状態を判定するための date, staffId, および target を受け取り、boolean を返す関数
+   */
+  type DayStatusQueryArgs  = {
+    date: number,
+    staffId: number,
+    target: 'isWorking' | 'locked',
+  }
+
+  type initializeAssignedShiftsArgs = {
+    staffs: Staff[],
+    shiftInput: ShiftInput[],
+    calculateClosedDayStatus: (args: DayStatusQueryArgs) => boolean,
+  }
+
+  const initializeAssignedShifts = ({ staffs, shiftInput, calculateClosedDayStatus }: initializeAssignedShiftsArgs): AssignedShift[] => {
+
+    const calculateDayStatus = (args: DayStatusQueryArgs) => calculateClosedDayStatus(args);
+
     return shiftInput.map((shift) => {
       return staffs.map((staff) => ({
         date: shift.date,
         staffId: staff.id,
-        isWorking: false,
-        locked: false,
+        isWorking: calculateDayStatus({ date: shift.date, staffId: staff.id, target: 'isWorking' }),
+        locked: calculateDayStatus({ date: shift.date, staffId: staff.id, target: 'locked' }),
       }));
     }).flat().sort((a, b) => a.date - b.date);
   }
 
-  const [assignedShifts, setAssignedShifts] = useState<AssignedShift[]>(createDefaultAssignedShifts(staffs, shiftInput));
+  const [assignedShifts, setAssignedShifts] = useState<AssignedShift[]>(initializeAssignedShifts({
+    staffs,
+    shiftInput,
+    calculateClosedDayStatus: (args) => calculateClosedDayStatus({ ...args, closedDays })
+  }));
 
   /**
    * Staff, ShiftInput, closedDays から AssignedShift を作成, 更新する
@@ -58,34 +105,16 @@ export const useAssignedShiftManager = ({ staffs, shiftInput }: UseAssignedShift
       dateStaffMap[assignedShift.date][assignedShift.staffId] = { isWorking: assignedShift.isWorking, locked: assignedShift.locked };
     });
 
-    type calculateDayStatusArgs = {
-      date: number,
-      target: 'isWorking' | 'locked',
-      current?: boolean,
-      closedDays: number[],
-    }
-    const calculateDayStatus = ({ date, target, current, closedDays }: calculateDayStatusArgs) => {
-      const overrideOnClosedDayMap = {
-        isWorking: false,
-        locked: true,
-      };
-      if (closedDays.includes(date)) {
-        return overrideOnClosedDayMap[target];
-      }
-      return current ?? false;
-    }
-
-    const syncedAssignedShifts = shiftInput.map((shift) => {
-      return staffs.map((staff) => {
-        const current = dateStaffMap[shift.date]?.[staff.id];
-        return {
-          date: shift.date,
-          staffId: staff.id,
-          isWorking: calculateDayStatus({ date: shift.date, target: 'isWorking', current: current?.isWorking, closedDays }),
-          locked: calculateDayStatus({ date: shift.date, target: 'locked', current: current?.locked, closedDays }),
-        }
-      });
-    }).flat().sort((a, b) => a.date - b.date);
+    const syncedAssignedShifts = initializeAssignedShifts({
+      staffs,
+      shiftInput,
+      calculateClosedDayStatus: ({date, staffId, target }) => calculateClosedDayStatus({ 
+        closedDays,
+        target,
+        date,
+        current: dateStaffMap[date]?.[staffId]?.[target] ?? false,
+      }),
+    });
 
     // 古い closedDays から除外された場合は、locked を false にする
     const removedClosedDays = oldClosedDays.filter((day) => !closedDays.includes(day));

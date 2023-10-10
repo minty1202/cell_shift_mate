@@ -84,7 +84,7 @@ export function ShiftManagementProvider({
     updateAssignedShiftOne,
     updateAssignedShifts,
     createLockedAssignedShiftInput,
-  } = useAssignedShiftManager({ staffs, shiftInput: createShiftInput(shiftSchedules) });
+  } = useAssignedShiftManager({ staffs, shiftInput: createShiftInput(shiftSchedules), closedDays: shiftSchedules.closedDays });
 
   const addStaff = (input: Pick<StaffInput, 'tier'>) => {
     addStaffCore(input, newStaffs => {
