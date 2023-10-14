@@ -13,9 +13,11 @@ import { ShiftManagementProvider, useShiftManagement } from '@/contexts/ShiftMan
 
 import { RequiredStaffCount } from '@/components/RequiredStaffCount/RequiredStaffCount'
 
+import { WorkDaysCounter } from '@/components/WorkDaysCounter/WorkDaysCounter'
+
 function ShiftSchedule() : ReactElement {
   const { state, actions } = useShiftManagement()
-  const { staffs, shiftSchedules, shifts, assignedShifts } = state
+  const { staffs, staffBaseSettings, shiftSchedules, shifts, assignedShifts } = state
 
   const handlePost = async () => {
     const res = await optimizeShift(actions.createShiftsInput())
@@ -63,6 +65,8 @@ function ShiftSchedule() : ReactElement {
       <DatePicker value={shiftSchedules.month} onChange={(month) => actions.updateShiftSchedule({ month })} />
       <br />
       <TieredStaffCounter value={tierCounts} onChange={handleChangeTierCounts} />
+      <br />
+      <WorkDaysCounter value={staffBaseSettings.workDays} month={shiftSchedules.month} onChange={(count) => actions.updateStaffsWorkDays(count)} />
       <br />
       <DaysStatusSelector
         month={shiftSchedules.month}

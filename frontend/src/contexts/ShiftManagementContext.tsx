@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo, ReactNode } from 'react';
 import { useAssignedShiftManager } from '@/hooks/useAssignedShiftManager';
 import { useShiftScheduleManager } from '@/hooks/useShiftScheduleManager';
 import { useStaffManager } from '@/hooks/useStaffManager';
-import { StaffManagement, Staff, StaffInput, ShiftSchedule, ShiftInput, AssignedShift, ShiftsInput } from '@/types';
+import { StaffManagement, StaffBaseSettings, Staff, StaffInput, ShiftSchedule, ShiftInput, AssignedShift, ShiftsInput } from '@/types';
 import dayjs from 'dayjs';
 
 
@@ -14,6 +14,7 @@ import dayjs from 'dayjs';
 interface State {
   staffs: Staff[];
   shifts: ShiftInput[];
+  staffBaseSettings: StaffBaseSettings
   shiftSchedules: ShiftSchedule;
   assignedShifts: AssignedShift[];
 }
@@ -24,6 +25,7 @@ interface Actions {
   removeStaff: (staffId: Staff['id']) => void;
   updateStaff: (staff: Staff) => void;
   updateShiftSchedule: (shiftSchedule: Partial<ShiftSchedule>) => void;
+  updateStaffsWorkDays: (workDays: number) => void;
   updateAssignedShiftOne: (assignedShift: Partial<AssignedShift>) => void;
   updateAssignedShifts: (assignedShifts: AssignedShift[]) => void;
   createShiftsInput: () => ShiftsInput;
@@ -60,8 +62,10 @@ export function ShiftManagementProvider({
 
   const {
     staffs,
+    staffBaseSettings,
     addStaff: addStaffCore,
     removeStaff: removeStaffCore,
+    updateStaffsWorkDays,
     updateStaff,
     createStaffsInput,
   } = useStaffManager(populatedInitialStaffManagement);
@@ -138,6 +142,7 @@ export function ShiftManagementProvider({
       value={{
         state: {
           staffs,
+          staffBaseSettings,
           shifts,
           shiftSchedules,
           assignedShifts,
@@ -147,6 +152,7 @@ export function ShiftManagementProvider({
           removeStaff,
           updateStaff,
           updateShiftSchedule,
+          updateStaffsWorkDays,
           updateAssignedShiftOne,
           updateAssignedShifts,
           createShiftsInput,

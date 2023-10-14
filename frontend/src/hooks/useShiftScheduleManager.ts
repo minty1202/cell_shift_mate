@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Tier } from '@/constants';
 import type { PartialExceptFor, ShiftInput, ShiftSchedule } from '@/types';
-import dayjs from 'dayjs';
+import { getDaysInMonth } from '@/utils/date';
 
 /**
  * ShiftSchedule から ShiftInput を作成する
@@ -23,7 +23,7 @@ const createShiftInput = (shiftSchedule: ShiftSchedule): ShiftInput[] => {
   } = shiftSchedule;
 
   // 月の日数を取得
-  const daysInMonth = dayjs(month).daysInMonth();
+  const daysInMonth = getDaysInMonth(month);
 
   // 月の日付の配列を作成
   const dateArray = [...Array(daysInMonth)].map((_, index) => index + 1);

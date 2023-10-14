@@ -1,17 +1,36 @@
 import { MouseEvent } from 'react';
 import { Staff, ShiftInput, AssignedShift } from '@/types';
-import { Table } from 'antd';
+import { Table, Typography, Space } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { DayStatusColorMap } from '@/constants';
-import './ShiftTable.module.css'
 import { LockFilled, UnlockOutlined } from '@ant-design/icons';
 import { grey } from '@ant-design/colors';
+import './ShiftTable.module.css'
 
 const SHIFT_DATA_INDEX_PREFIX = 'shifts';
 
+interface  StaffDataType extends Staff {
+  attendanceCount: number;
+}
+
+interface ShiftDataType {
+  [key: string]: {
+    isWorking: boolean;
+    isLocked: boolean;
+    isClosed: boolean;
+    isBusy: boolean;
+    onLockIconClick: (toggle: boolean) => void;
+  }
+}
+
+interface DataType {
+  staff: Staff;
+  shifts: ShiftDataType;
+}
+
 const commonCellStyle = {
-  padding: '8px 8px',
-  minWidth: '20px',
+  padding: '4px 4px',
+  minWidth: '16px',
   textAlign: 'center' as const,
 }
 
@@ -48,23 +67,13 @@ function LockIcon({ isLocked, onClick }: LockIconProps) {
   );
 }
 
-interface ShiftDataType {
-  [key: string]: {
-    isWorking: boolean;
-    isLocked: boolean;
-    isClosed: boolean;
-    isBusy: boolean;
-    onLockIconClick: (toggle: boolean) => void;
-  }
-}
-
 interface HeaderCellProps {
   date: number;
   isClosed: boolean;
   isBusy: boolean;
 }
 
-function HeaderCell({ date, isClosed, isBusy }: HeaderCellProps) {
+function ColumnHeaderCell({ date, isClosed, isBusy }: HeaderCellProps) {
   const busyDaysStyle = {
     backgroundColor: DayStatusColorMap['busy'][1],
     color: DayStatusColorMap['busy'][4],
@@ -95,6 +104,41 @@ function HeaderCell({ date, isClosed, isBusy }: HeaderCellProps) {
       {date}
     </div>
   );
+}
+
+function LabelColumn() {
+  const { Text } = Typography
+  return (
+    <div style={commonCellStyle}>
+      Staff&nbsp;
+      <Text
+        type="secondary"
+        style={{
+          fontSize: '12px',
+          fontWeight: 'normal',
+        }}
+      >
+        出勤数/予定数
+      </Text>
+    </div>
+  );
+}
+
+interface RecordHeaderCellProps {
+  staff: StaffDataType;
+}
+function RecordHeaderCell({ staff }: RecordHeaderCellProps) {
+  const { Text } = Typography;
+  return (
+    <div style={commonCellStyle}>
+        <Space>
+          {staff.name}
+          <Text type="secondary">
+            ({staff.attendanceCount}/{staff.workDays})
+          </Text>
+        </Space>
+      </div>
+  )
 }
 
 interface CellProps {
@@ -141,12 +185,6 @@ function Cell({ value }: CellProps) {
 
 const addShiftDataIndexPrefix = (date: number) => `${SHIFT_DATA_INDEX_PREFIX}.${date}`;
 
-
-interface DataType {
-  name: string;
-  shifts: ShiftDataType;
-}
-
 interface CreateColumnsArgs {
   shifts: ShiftInput[];
   closedDays: number[];
@@ -168,13 +206,13 @@ const createColumns = ({ shifts, closedDays, busyDays}: CreateColumnsArgs): Colu
   
   const columns: ColumnsType<DataType> = [
     {
-      title: () => <div style={commonCellStyle}>Staff</div>,
-      dataIndex: 'name',
-      key: 'name',
-      render: (value: string) => <div style={commonCellStyle}>{value}</div>,
+      title: () => <LabelColumn />,
+      dataIndex: 'staff',
+      key: 'staff',
+      render: (staff: StaffDataType) => <RecordHeaderCell staff={staff} />,
     },
     ...dateWithDayStatus.map((shift) => ({
-      title: () => <HeaderCell {...shift} />,
+      title: () => <ColumnHeaderCell {...shift} />,
       dataIndex: ['shifts', addShiftDataIndexPrefix(shift.date)],
       key: shift.date,
       render: (value: ShiftDataType[keyof ShiftDataType]) => <Cell value={value} />,
@@ -211,7 +249,10 @@ const createData = ({ staffs, assignedShifts, closedDays, busyDays, onChangeLock
     }, {});
 
     return {
-      name: staff.name,
+      staff: {
+        ...staff,
+        attendanceCount: sortedShifts.filter((shift) => shift.isWorking).length,
+      },
       shifts,
       key: staff.id,
     };

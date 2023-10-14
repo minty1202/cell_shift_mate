@@ -104,6 +104,29 @@ export const useStaffManager = (initialStaffManagement: InitialStaffManagement) 
   }
 
   /**
+   * スタッフ全体の出勤日を更新する
+   * TODO: ユーザーによって編集された場合は、そのstaffは除外する
+   * TODO: 今は workDays だが、他の設定もできる命名にする
+   * 
+   * @param {number} 出勤数
+   */
+  const updateStaffsWorkDays = (workDays: number) => {
+    const { staffs } = staffManagement;
+
+    const newStaffs = staffs.map((state) => {
+      return {
+        ...state,
+        workDays,
+      }
+    });
+    setStaffManagement((prev) => ({
+      ...prev,
+      workDays,
+      staffs: newStaffs,
+    }));
+  };
+
+  /**
    * Staff を削除する、更新した Staffs をオプションのコールバックで返す
    * 
    * @param {number} staffId - 削除する Staff の id
@@ -128,11 +151,12 @@ export const useStaffManager = (initialStaffManagement: InitialStaffManagement) 
   }
 
   return {
-    staffManagement,
+    staffBaseSettings: useMemo(() => ({ workDays: staffManagement.workDays }), [staffManagement]),
     staffs: useMemo(() => createStaffs(), [staffManagement]),
     addStaff,
     updateStaff,
     removeStaff,
+    updateStaffsWorkDays,
     createStaffsInput,
   }
 };

@@ -24,6 +24,10 @@ export type StaffManagement = {
   staffs: Staff[];
 }
 
+export type StaffBaseSettings = {
+  workDays: StaffManagement['workDays']
+}
+
 export type ShiftInput = {
   date: number;
   requiredStaffCount: number;
