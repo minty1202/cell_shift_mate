@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo, ReactNode } from 'react';
 import { useAssignedShiftManager } from '@/hooks/useAssignedShiftManager';
 import { useShiftScheduleManager } from '@/hooks/useShiftScheduleManager';
 import { useStaffManager } from '@/hooks/useStaffManager';
-import { Staff, StaffInput, ShiftSchedule, ShiftInput, AssignedShift, ShiftsInput } from '@/types';
+import { StaffManagement, StaffBaseSettings, Staff, StaffInput, ShiftSchedule, ShiftInput, AssignedShift, ShiftsInput } from '@/types';
 import dayjs from 'dayjs';
 
 
@@ -14,6 +14,7 @@ import dayjs from 'dayjs';
 interface State {
   staffs: Staff[];
   shifts: ShiftInput[];
+  staffBaseSettings: StaffBaseSettings
   shiftSchedules: ShiftSchedule;
   assignedShifts: AssignedShift[];
 }
@@ -24,6 +25,7 @@ interface Actions {
   removeStaff: (staffId: Staff['id']) => void;
   updateStaff: (staff: Staff) => void;
   updateShiftSchedule: (shiftSchedule: Partial<ShiftSchedule>) => void;
+  updateStaffsWorkDays: (workDays: number) => void;
   updateAssignedShiftOne: (assignedShift: Partial<AssignedShift>) => void;
   updateAssignedShifts: (assignedShifts: AssignedShift[]) => void;
   createShiftsInput: () => ShiftsInput;
@@ -38,27 +40,35 @@ interface ShiftManagementProviderProps {
   children: ReactNode;
   initialState? :{
     shiftSchedule?: Partial<ShiftSchedule>;
+    staffManagement?: Partial<StaffManagement>;
   };
 }
 
 export function ShiftManagementProvider({ 
   children,
   initialState: {
-    shiftSchedule: initialShiftSchedule = {}
+    shiftSchedule: initialShiftSchedule = {},
+    staffManagement: initialStaffManagement = {}
   } = {
-    shiftSchedule: {}
+    shiftSchedule: {},
+    staffManagement: {}
   }
 }: ShiftManagementProviderProps) {
 
-
+  const populatedInitialStaffManagement = {
+    workDays: 20,
+    ...initialStaffManagement
+  }
 
   const {
     staffs,
+    staffBaseSettings,
     addStaff: addStaffCore,
     removeStaff: removeStaffCore,
+    updateStaffsWorkDays,
     updateStaff,
     createStaffsInput,
-  } = useStaffManager();
+  } = useStaffManager(populatedInitialStaffManagement);
 
   const populatedInitialShiftSchedule   = {
     // shiftSchedules の対象月の初期値は、翌月
@@ -78,7 +88,7 @@ export function ShiftManagementProvider({
     updateAssignedShiftOne,
     updateAssignedShifts,
     createLockedAssignedShiftInput,
-  } = useAssignedShiftManager({ staffs, shiftInput: createShiftInput(shiftSchedules) });
+  } = useAssignedShiftManager({ staffs, shiftInput: createShiftInput(shiftSchedules), closedDays: shiftSchedules.closedDays });
 
   const addStaff = (input: Pick<StaffInput, 'tier'>) => {
     addStaffCore(input, newStaffs => {
@@ -114,7 +124,7 @@ export function ShiftManagementProvider({
   }
 
   const createShiftsInput = ():ShiftsInput  => {
-    const staffsInput = createStaffsInput(staffs);
+    const staffsInput = createStaffsInput();
     const shiftInput = createShiftInput(shiftSchedules);
     const lockedAssignedShift = createLockedAssignedShiftInput(assignedShifts);
 
@@ -132,6 +142,7 @@ export function ShiftManagementProvider({
       value={{
         state: {
           staffs,
+          staffBaseSettings,
           shifts,
           shiftSchedules,
           assignedShifts,
@@ -141,6 +152,7 @@ export function ShiftManagementProvider({
           removeStaff,
           updateStaff,
           updateShiftSchedule,
+          updateStaffsWorkDays,
           updateAssignedShiftOne,
           updateAssignedShifts,
           createShiftsInput,

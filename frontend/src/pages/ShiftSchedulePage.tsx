@@ -4,7 +4,7 @@ import { optimizeShift } from '@/api/shift/optimizeShiftApi'
 import { DatePicker } from '@/components/DatePicker/DatePicker'
 import { DaysStatusSelector } from '@/components/DaysStatusSelector/DaysStatusSelector'
 import { RequiredAttendanceTiers } from '@/components/RequiredAttendance/RequiredAttendanceTiers'
-import { RequiredAttendanceTierCount } from '@/components/RequiredAttendance/RequiredAttendanceTierCount'
+import { RequiredAttendanceTierCounter } from '@/components/RequiredAttendance/RequiredAttendanceTierCounter'
 
 import { Tiers } from '@/constants'
 import { TieredStaffCounter } from '@/components/TieredStaffCounter/TieredStaffCounter'
@@ -13,9 +13,11 @@ import { ShiftManagementProvider, useShiftManagement } from '@/contexts/ShiftMan
 
 import { RequiredStaffCount } from '@/components/RequiredStaffCount/RequiredStaffCount'
 
+import { WorkDaysCounter } from '@/components/WorkDaysCounter/WorkDaysCounter'
+
 function ShiftSchedule() : ReactElement {
   const { state, actions } = useShiftManagement()
-  const { staffs, shiftSchedules, shifts, assignedShifts } = state
+  const { staffs, staffBaseSettings, shiftSchedules, shifts, assignedShifts } = state
 
   const handlePost = async () => {
     const res = await optimizeShift(actions.createShiftsInput())
@@ -64,6 +66,8 @@ function ShiftSchedule() : ReactElement {
       <br />
       <TieredStaffCounter value={tierCounts} onChange={handleChangeTierCounts} />
       <br />
+      <WorkDaysCounter value={staffBaseSettings.workDays} month={shiftSchedules.month} onChange={(count) => actions.updateStaffsWorkDays(count)} />
+      <br />
       <DaysStatusSelector
         month={shiftSchedules.month}
         closedDays={shiftSchedules.closedDays}
@@ -77,7 +81,7 @@ function ShiftSchedule() : ReactElement {
       <br />
       <RequiredAttendanceTiers value={shiftSchedules.requiredAttendanceTiers} onChange={(tiers) => actions.updateShiftSchedule({ requiredAttendanceTiers: tiers })} />
       <br />
-      <RequiredAttendanceTierCount value={shiftSchedules.requiredAttendanceTierCount} onChange={(count) => actions.updateShiftSchedule({ requiredAttendanceTierCount: count })} />
+      <RequiredAttendanceTierCounter value={shiftSchedules.requiredAttendanceTierCount} onChange={(count) => actions.updateShiftSchedule({ requiredAttendanceTierCount: count })} />
       <br />
       <button onClick={handlePost}>post</button>
       <ShiftTable
@@ -94,6 +98,10 @@ function ShiftSchedule() : ReactElement {
 
 export function ShiftSchedulePage(): ReactElement {
 
+  const initialStaffManagement = {
+    workDays: 20
+  }
+
   // とりあえず初期値を入れておく
   // 本来は staffs から計算したほうがいい
   const initialShiftSchedules = {
@@ -104,8 +112,13 @@ export function ShiftSchedulePage(): ReactElement {
     requiredAttendanceTierCount: 1,
   }
 
+  const initialState = {
+    staffManagement: initialStaffManagement,
+    shiftSchedule: initialShiftSchedules
+  }
+
   return (
-    <ShiftManagementProvider initialState={{shiftSchedule: initialShiftSchedules}}>
+    <ShiftManagementProvider initialState={initialState}>
       <ShiftSchedule />
     </ShiftManagementProvider>
   )

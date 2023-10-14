@@ -2,12 +2,12 @@ import { ReactElement } from "react";
 import { Typography } from 'antd';
 import { InputCounter } from '@/components/common/InputCounter'
 
-interface RequiredAttendanceTierCountProps {
+interface RequiredAttendanceTierCounterProps {
   value: number
   onChange: (count: number) => void
 }
 
-export function RequiredAttendanceTierCount({ value, onChange }: RequiredAttendanceTierCountProps): ReactElement {
+export function RequiredAttendanceTierCounter({ value, onChange }: RequiredAttendanceTierCounterProps): ReactElement {
   const { Text } = Typography;
 
   return (
