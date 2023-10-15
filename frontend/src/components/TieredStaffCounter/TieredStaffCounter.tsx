@@ -31,7 +31,11 @@ function Input({  tier, value, onChange }: InputProps) {
       }}
     >
       <Space>
-        <span>{TierNameMap[tier]}</span>
+        <span
+          style={{ fontSize: 12 }}
+        >
+          {TierNameMap[tier]}
+        </span>
         <InputCounter
           value={value}
           onChange={(num) => onChange({ tier, count: num })}

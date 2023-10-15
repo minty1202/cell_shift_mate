@@ -258,15 +258,16 @@ export function DaysStatusSelector({ month, closedDays, busyDays, onChange }: Da
 
   return (
     <>
-      <DaySelector 
-        {...daySelectorCommonProps}
-        target='closed'
-      />
-      <br />
-      <DaySelector 
-        {...daySelectorCommonProps}
-        target='busy'
-      />
+      <Space direction="vertical">
+        <DaySelector 
+          {...daySelectorCommonProps}
+          target='closed'
+        />
+        <DaySelector 
+          {...daySelectorCommonProps}
+          target='busy'
+        />
+      </Space>
     </>
   )
 }

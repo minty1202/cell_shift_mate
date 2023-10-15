@@ -14,8 +14,6 @@ export function WorkDaysCounter({ value, month, onChange }: WorkDaysCounterProps
 
   return (
     <>
-      <Text strong>スタッフの出勤日数</Text>
-      <br />
       <Space>
         <InputCounter
           value={value}
