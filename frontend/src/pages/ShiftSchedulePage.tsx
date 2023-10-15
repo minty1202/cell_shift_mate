@@ -15,6 +15,9 @@ import { RequiredStaffCount } from '@/components/RequiredStaffCount/RequiredStaf
 
 import { WorkDaysCounter } from '@/components/WorkDaysCounter/WorkDaysCounter'
 
+import holiday_jp from '@holiday-jp/holiday_jp'
+import dayjs from 'dayjs';
+
 function ShiftSchedule() : ReactElement {
   const { state, actions } = useShiftManagement()
   const { staffs, staffBaseSettings, shiftSchedules, shifts, assignedShifts } = state
@@ -96,6 +99,25 @@ function ShiftSchedule() : ReactElement {
 
 export function ShiftSchedulePage(): ReactElement {
 
+  const nextMonth = dayjs().add(1, 'month').startOf('month')
+  const nextMonthStr = nextMonth.format('YYYY-MM')
+
+  // 祝日を取得する
+  const firstDay = nextMonth.startOf('month').format('YYYY-MM-DD')
+  const lastDay = nextMonth.endOf('month').format('YYYY-MM-DD')
+  const holiday = [...holiday_jp.between(new Date(firstDay), new Date(lastDay))].map((h) => {
+    return dayjs(new Date(h.date)).date()
+  })
+
+  //  土日を取得する
+  const weekend = [...Array(nextMonth.daysInMonth()).keys()].map((i) => {
+    const date = nextMonth.date(i + 1)
+    if (date.day() === 0 || date.day() === 6) return i + 1
+    return null
+  }).filter((i) => i !== null) as number[]
+
+  const busyDays = [...holiday, ...weekend].sort((a, b) => a - b)
+  
   const initialStaffManagement = {
     workDays: 20
   }
@@ -103,7 +125,8 @@ export function ShiftSchedulePage(): ReactElement {
   // とりあえず初期値を入れておく
   // 本来は staffs から計算したほうがいい
   const initialShiftSchedules = {
-    busyDays: [2, 4],
+    month: nextMonthStr,
+    busyDays: busyDays,
     requiredStaffCountOnNormal: 3,
     requiredStaffCountOnBusy: 4,
     requiredAttendanceTiers: [1, 2],
