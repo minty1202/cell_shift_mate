@@ -48,9 +48,8 @@ export function RequiredAttendanceTiers({ value, onChange }: RequiredAttendanceT
 
   return (
     <>
+      <Space style={{ width: '20%' }} direction="vertical">
       <Text strong>必須役職の選択</Text>
-      <br />
-      <Space style={{ width: '60%' }} direction="vertical">
         <Select
           mode="multiple"
           options={options}

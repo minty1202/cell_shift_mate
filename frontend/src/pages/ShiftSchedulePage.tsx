@@ -1,7 +1,7 @@
-import { ReactElement } from "react";
+import { useState, ReactElement } from "react";
 import { ShiftTable } from '@/components/ShiftTable/ShiftTable'
 import { optimizeShift } from '@/api/shift/optimizeShiftApi'
-import { DatePicker } from '@/components/DatePicker/DatePicker'
+import { MonthPicker } from '@/components/MonthPicker/MonthPicker'
 import { DaysStatusSelector } from '@/components/DaysStatusSelector/DaysStatusSelector'
 import { RequiredAttendanceTiers } from '@/components/RequiredAttendance/RequiredAttendanceTiers'
 import { RequiredAttendanceTierCounter } from '@/components/RequiredAttendance/RequiredAttendanceTierCounter'
@@ -17,15 +17,19 @@ import { WorkDaysCounter } from '@/components/WorkDaysCounter/WorkDaysCounter'
 
 import holiday_jp from '@holiday-jp/holiday_jp'
 import dayjs from 'dayjs';
+import { Space, Divider, Button, Typography } from "antd";
 
 function ShiftSchedule() : ReactElement {
+  const [loading, setLoading] = useState(false)
   const { state, actions } = useShiftManagement()
   const { staffs, staffBaseSettings, shiftSchedules, shifts, assignedShifts } = state
+  const { Text } = Typography;
 
   const handlePost = async () => {
+    setLoading(true)
     const res = await optimizeShift(actions.createShiftsInput())
+    setLoading(false)
     const data = await res.json()
-    console.log(data)
     actions.updateAssignedShifts(data)
   }
 
@@ -61,38 +65,111 @@ function ShiftSchedule() : ReactElement {
 
   return (
     <>
-      <DatePicker value={shiftSchedules.month} onChange={(month) => actions.updateShiftSchedule({ month })} />
-      <br />
-      <TieredStaffCounter value={tierCounts} onChange={handleChangeTierCounts} />
-      <br />
-      <WorkDaysCounter value={staffBaseSettings.workDays} month={shiftSchedules.month} onChange={(count) => actions.updateStaffsWorkDays(count)} />
-      <br />
-      <DaysStatusSelector
-        month={shiftSchedules.month}
-        closedDays={shiftSchedules.closedDays}
-        busyDays={shiftSchedules.busyDays}
-        onChange={handleUpdateShiftSchedule}
-      />
-      <br />
-      <RequiredStaffCount type='normal' value={shiftSchedules.requiredStaffCountOnNormal} onChange={(count) => actions.updateShiftSchedule({ requiredStaffCountOnNormal: count })} />
-      <br />
-      <RequiredStaffCount type='busy' value={shiftSchedules.requiredStaffCountOnBusy} onChange={(count) => actions.updateShiftSchedule({ requiredStaffCountOnBusy: count })} />
-      <br />
-      <RequiredAttendanceTiers value={shiftSchedules.requiredAttendanceTiers} onChange={(tiers) => actions.updateShiftSchedule({ requiredAttendanceTiers: tiers })} />
-      <br />
-      <RequiredAttendanceTierCounter value={shiftSchedules.requiredAttendanceTierCount} onChange={(count) => actions.updateShiftSchedule({ requiredAttendanceTierCount: count })} />
-      <br />
-      <button onClick={handlePost}>post</button>
-      <ShiftTable
-        month={shiftSchedules.month}
-        closedDays={shiftSchedules.closedDays}
-        busyDays={shiftSchedules.busyDays}
-        staffs={staffs}
-        shifts={shifts}
-        assignedShifts={assignedShifts}
-        onChangeAssignedOne={actions.updateAssignedShiftOne}
-        onChangeStaff={actions.updateStaff}
-      />
+      <div
+        style={{
+          padding: 24,
+          backgroundColor: '#fff',
+          borderRadius: 6,
+          width: '100%',
+        }}
+      >
+        <Space
+          direction="vertical"
+          size='small'
+          split={<Divider 
+            style={{
+              height: '100%',
+              margin: '8px 0'
+            }}
+          />}
+          style={{
+            width: '100%',
+          }}
+        >
+          <div>
+            <Space direction="vertical">
+            <Text strong>作成月を選択</Text>
+            <MonthPicker value={shiftSchedules.month} onChange={(month) => actions.updateShiftSchedule({ month })} />
+            </Space>
+          </div>
+          <div>
+            <Space direction="vertical">
+              <Text strong>スタッフの人数を設定</Text>
+              <TieredStaffCounter value={tierCounts} onChange={handleChangeTierCounts} />
+            </Space>
+          </div>
+          <div>
+            <Space direction="vertical">
+              <Text strong>スタッフの出勤日数を設定</Text>
+              <WorkDaysCounter value={staffBaseSettings.workDays} month={shiftSchedules.month} onChange={(count) => actions.updateStaffsWorkDays(count)} />
+            </Space>
+          </div>
+          <div>
+            <Space direction="vertical">
+              <Text strong>スケジュールを設定</Text>
+              <DaysStatusSelector
+                month={shiftSchedules.month}
+                closedDays={shiftSchedules.closedDays}
+                busyDays={shiftSchedules.busyDays}
+                onChange={handleUpdateShiftSchedule}
+              />
+            </Space>
+          </div>
+          <div>
+            <Space direction="vertical">
+            <Text strong>必要人数を設定</Text>
+              <Space size="middle">
+                <RequiredStaffCount type='normal' value={shiftSchedules.requiredStaffCountOnNormal} onChange={(count) => actions.updateShiftSchedule({ requiredStaffCountOnNormal: count })} />
+                <RequiredStaffCount type='busy' value={shiftSchedules.requiredStaffCountOnBusy} onChange={(count) => actions.updateShiftSchedule({ requiredStaffCountOnBusy: count })} />
+              </Space>
+            </Space>
+          </div>
+          <div>
+            <RequiredAttendanceTiers value={shiftSchedules.requiredAttendanceTiers} onChange={(tiers) => actions.updateShiftSchedule({ requiredAttendanceTiers: tiers })} />
+          </div>
+          <div>
+            <Space direction="vertical">
+              <Text strong>必須役職の必要人数</Text>
+              <RequiredAttendanceTierCounter value={shiftSchedules.requiredAttendanceTierCount} onChange={(count) => actions.updateShiftSchedule({ requiredAttendanceTierCount: count })} />
+            </Space>
+          </div>
+        </Space>
+      </div>
+      <div
+        style={{
+          marginTop: '24px',
+          padding: 24,
+          backgroundColor: '#fff',
+          borderRadius: 6,
+        }}
+      >
+        <ShiftTable
+          month={shiftSchedules.month}
+          closedDays={shiftSchedules.closedDays}
+          busyDays={shiftSchedules.busyDays}
+          staffs={staffs}
+          shifts={shifts}
+          assignedShifts={assignedShifts}
+          onChangeAssignedOne={actions.updateAssignedShiftOne}
+          onChangeStaff={actions.updateStaff}
+        />
+         <div
+          style={{
+            marginTop: '24px',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+          }}
+         >
+          <Button
+            type="primary"
+            loading={loading}
+            onClick={handlePost}
+          >
+            作成する
+          </Button>
+         </div>
+      </div>
     </>
   )
 }

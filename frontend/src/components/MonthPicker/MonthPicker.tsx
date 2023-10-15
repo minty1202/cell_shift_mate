@@ -1,15 +1,16 @@
-import { DatePicker as AntdDatePicker } from 'antd';
+import { DatePicker } from 'antd';
 import dayjs from 'dayjs';
 
-interface DatePickerProps {
+interface MonthPickerProps {
   value: string
   onChange: (date: string) => void
 }
 
-export function DatePicker({ value, onChange }: DatePickerProps) {
+export function MonthPicker({ value, onChange }: MonthPickerProps) {
   return (
-    <AntdDatePicker
-      format={'YYYY年MM月'}
+    <DatePicker
+      format='YYYY年MM月'
+      size='small'
       picker="month"
       allowClear={false}
       value={dayjs(value)}
