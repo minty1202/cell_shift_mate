@@ -1,9 +1,9 @@
-import { MouseEvent, ReactElement } from 'react';
+import { useState, ReactElement } from 'react';
 import { Staff, ShiftInput, AssignedShift } from '@/types';
-import { Table, Typography, Space, Popover, Flex, Input, Select, ConfigProvider, Tag } from 'antd';
+import { Table, Typography, Space, Popover, Flex, Input, Select, ConfigProvider, Tag, Button } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { DayStatusColorMap } from '@/constants';
-import { LockFilled, UnlockOutlined, EditOutlined } from '@ant-design/icons';
+import { LockFilled, EditOutlined } from '@ant-design/icons';
 import { grey } from '@ant-design/colors';
 import './ShiftTable.module.css'
 import { gray } from '@ant-design/colors';
@@ -24,12 +24,17 @@ interface  StaffDataType extends Staff {
 
 interface ShiftDataType {
   [key: string]: {
-    isWorking: boolean;
-    isLocked: boolean;
-    isClosed: boolean;
-    isBusy: boolean;
-    isDesiredOffDay: boolean;
-    onLockIconClick: (toggle: boolean) => void;
+    value: {
+      isWorking: boolean;
+      isLocked: boolean;
+      isClosed: boolean;
+      isBusy: boolean;
+      isDesiredOffDay: boolean;
+    };
+    actions: {
+      onChangeLock: (toggle: boolean) => void;
+      onChangeAttendance: (toggle: boolean) => void;
+    }
   }
 }
 
@@ -44,22 +49,11 @@ const commonCellStyle = {
   textAlign: 'center' as const,
 }
 
-
-interface LockIconProps {
-  isLocked: boolean;
-  onClick: (toggle: boolean) => void;
-}
-
-function LockIcon({ isLocked, onClick }: LockIconProps): ReactElement {
+function LockedIcon(): ReactElement {
 
   const iconStyle = {
     zIndex: 20,
     color: grey[0],
-  }
-
-  const handleClick = (e: MouseEvent) => {
-    e.stopPropagation();
-    onClick(!isLocked);
   }
 
   return (
@@ -70,9 +64,8 @@ function LockIcon({ isLocked, onClick }: LockIconProps): ReactElement {
         right: '0',
         cursor: 'pointer',
       }}
-      onClick={handleClick}
     >
-      {isLocked ? <LockFilled style={{...iconStyle, opacity: 0.8 }} /> : <UnlockOutlined style={{...iconStyle, opacity: 0.4 }} />}
+      <LockFilled style={{...iconStyle, opacity: 0.8 }} />
     </span>
   );
 }
@@ -249,7 +242,7 @@ function RecordHeaderCell({ staff }: RecordHeaderCellProps): ReactElement {
           <EditOutlined style={{ color: gray[0]}} />
         </Flex>
       </div>
-      </Popover>
+    </Popover>
   )
 }
 
@@ -275,13 +268,16 @@ function DesiredOffDayDot(): ReactElement {
 }
 
 interface CellProps {
-  value: ShiftDataType[keyof ShiftDataType];
+  data: ShiftDataType[keyof ShiftDataType];
 }
 
-function Cell({ value }: CellProps): ReactElement {
-  const { isWorking, isClosed, isBusy, isLocked, isDesiredOffDay, onLockIconClick } = value
+function Cell({ data }: CellProps): ReactElement {
+  const [clickTimeout, setClickTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const { value, actions } = data
+  const { isWorking, isClosed, isBusy, isLocked, isDesiredOffDay } = value
+  const { onChangeLock, onChangeAttendance } = actions
 
-  
   const busyDaysStyle = {
     backgroundColor: DayStatusColorMap['busy'][0],
     color: DayStatusColorMap['busy'][4],
@@ -302,19 +298,84 @@ function Cell({ value }: CellProps): ReactElement {
     return {}
   }
 
+  const handleSingleClick = () => {
+    onChangeAttendance(!isWorking)
+  }
+
+  const handleDoubleClick = () => {
+    onChangeLock(!isLocked)
+  }
+
+  const handleClick = () => {
+    if (clickTimeout == null) {
+      const timeout = setTimeout(() => {
+        handleSingleClick();
+        setClickTimeout(null);
+      }, 250);
+      setClickTimeout(timeout);
+    } else {
+      clearTimeout(clickTimeout);
+      setClickTimeout(null);
+      handleDoubleClick();
+    }
+  };
+
+  const ContentButton: React.FC<{ text: string, onClick: () => void }> = ({ text, onClick }) => {
+    return (
+      <Button
+        type="text"
+        style={{ fontSize: 12 }}
+        onClick={() => {
+          onClick();
+          setIsPopoverOpen(false);
+        }}
+      >
+        {text}
+      </Button>
+    )
+  }
+
+  const content = (
+    <span>
+      <div>
+        <ContentButton
+          text={`${isWorking ? '休日' : '出勤'}に変更する`}
+          onClick={() => onChangeAttendance(!isWorking)}
+        />
+      </div>
+      <div>
+        <ContentButton
+          text={isLocked ? 'ロックを解除する' : 'ロックする'}
+          onClick={() => onChangeLock(!isLocked)}
+        />
+      </div>
+    </span>
+  )
+
   return (
-    <div
-    style={{
-      ...selectDayStatusStyle({ isClosed, isBusy }),
-      ...commonCellStyle,
-      borderColor: DesiredOffDayColor[0],
-      position: 'relative',
-    }}
+    <Popover
+      placement="rightTop"
+      content={content}
+      trigger="contextMenu"
+      open={isPopoverOpen}
+      onOpenChange={(visible) => setIsPopoverOpen(visible)}
     >
-      {isDesiredOffDay && <DesiredOffDayDot />}
-      <LockIcon isLocked={isLocked} onClick={onLockIconClick} />
-      {isWorking ? '○' : '×'}
-    </div>
+      <div
+        style={{
+          ...selectDayStatusStyle({ isClosed, isBusy }),
+          ...commonCellStyle,
+          borderColor: DesiredOffDayColor[0],
+          cursor: 'pointer',
+          position: 'relative',
+          userSelect: 'none',
+        }}
+        onClick={handleClick}
+      >
+        {isDesiredOffDay && <DesiredOffDayDot />}
+        {isLocked && <LockedIcon />}
+        {isWorking ? '○' : '×'}
+      </div>
+    </Popover>
   );
 }
 
@@ -350,7 +411,7 @@ const createColumns = ({ shifts, closedDays, busyDays}: CreateColumnsArgs): Colu
       title: () => <ColumnHeaderCell {...shift} />,
       dataIndex: ['shifts', addShiftDataIndexPrefix(shift.date)],
       key: shift.date,
-      render: (value: ShiftDataType[keyof ShiftDataType]) => <Cell value={value} />,
+      render: (value: ShiftDataType[keyof ShiftDataType]) => <Cell data={value} />,
     })),
   ];
   return columns;
@@ -362,11 +423,11 @@ interface CreateDataArgs {
   month: string;
   closedDays: number[];
   busyDays: number[];
-  onChangeLock: ({ staffId, date, isLocked }: { staffId: number, date: number, isLocked: boolean }) => void;
+  onChangeAssigned: (assigned: AssignedShift) => void;
   onChangeStaff: (staff: Staff) => void;
 }
 
-const createData = ({ staffs, month, assignedShifts, closedDays, busyDays, onChangeLock, onChangeStaff }: CreateDataArgs): DataType[] => {
+const createData = ({ staffs, month, assignedShifts, closedDays, busyDays, onChangeAssigned, onChangeStaff }: CreateDataArgs): DataType[] => {
   return staffs.map((staff) => {
     const myShifts = assignedShifts.filter((assignedShift) => assignedShift.staffId === staff.id);
 
@@ -374,14 +435,32 @@ const createData = ({ staffs, month, assignedShifts, closedDays, busyDays, onCha
 
     const shifts = sortedShifts.reduce((acc: ShiftDataType, shift) => {
       acc[addShiftDataIndexPrefix(shift.date)] = {
-        isWorking:  shift.isWorking,
-        isLocked: shift.locked,
-        isClosed: closedDays.some((day) => day === shift.date),
-        isBusy: busyDays.some((day) => day === shift.date),
-        isDesiredOffDay: staff.desiredOffDays.some((day) => day === shift.date),
-        onLockIconClick: (toggle) => {
-          onChangeLock({ staffId: staff.id, date: shift.date, isLocked: toggle });
+        value: {
+
+          isWorking:  shift.isWorking,
+          isLocked: shift.locked,
+          isClosed: closedDays.some((day) => day === shift.date),
+          isBusy: busyDays.some((day) => day === shift.date),
+          isDesiredOffDay: staff.desiredOffDays.some((day) => day === shift.date),
         },
+        actions: {
+          onChangeLock: (toggle) => {
+            onChangeAssigned({
+              staffId: staff.id,
+              date: shift.date,
+              isWorking: shift.isWorking,
+              locked: toggle
+            });
+          },
+          onChangeAttendance: (toggle) => {
+            onChangeAssigned({
+              staffId: staff.id,
+              date: shift.date,
+              locked: shift.locked,
+              isWorking: toggle,
+            });
+          }
+        }
       };
       return acc;
     }, {});
@@ -408,7 +487,7 @@ interface ShiftTableProps {
   staffs: Staff[];
   shifts: ShiftInput[];
   assignedShifts: AssignedShift[];
-  onChangeLock: ({ staffId, date, isLocked }: { staffId: number, date: number, isLocked: boolean }) => void;
+  onChangeAssignedOne: (assigned: AssignedShift) => void;
   onChangeStaff: (staff: Staff) => void;
 }
 
@@ -419,7 +498,7 @@ export function ShiftTable({
   staffs,
   shifts,
   assignedShifts,
-  onChangeLock,
+  onChangeAssignedOne,
   onChangeStaff,
 }: ShiftTableProps): ReactElement {
 
@@ -430,7 +509,7 @@ export function ShiftTable({
     assignedShifts,
     closedDays,
     busyDays,
-    onChangeLock,
+    onChangeAssigned: onChangeAssignedOne,
     onChangeStaff
   });
 
