@@ -56,10 +56,6 @@ function ShiftSchedule() : ReactElement {
     actions.updateShiftSchedule(days)
   }
 
-  const handleChangeLock = ({ staffId, date, isLocked }: { staffId: number, date: number, isLocked: boolean }) => {
-    actions.updateAssignedShiftOne({ staffId, date, locked: isLocked })
-  }
-
   return (
     <>
       <DatePicker value={shiftSchedules.month} onChange={(month) => actions.updateShiftSchedule({ month })} />
@@ -91,7 +87,7 @@ function ShiftSchedule() : ReactElement {
         staffs={staffs}
         shifts={shifts}
         assignedShifts={assignedShifts}
-        onChangeLock={handleChangeLock}
+        onChangeAssignedOne={actions.updateAssignedShiftOne}
         onChangeStaff={actions.updateStaff}
       />
     </>
