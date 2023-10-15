@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Tier } from '@/constants';
 import type { PartialExceptFor, ShiftInput, ShiftSchedule } from '@/types';
 import { getDaysInMonth } from '@/utils/date';
+import dayjs from 'dayjs';
+import holiday_jp from '@holiday-jp/holiday_jp'
 
 /**
  * ShiftSchedule から ShiftInput を作成する
@@ -133,11 +135,33 @@ export const useShiftScheduleManager = (initialShiftSchedule: InitialShiftSchedu
    */
     const updateShiftSchedule  = (shiftScheduleInput: Partial<ShiftSchedule>, callback?: (newShiftSchedule: ShiftSchedule) => void) => {
       // 月が変わる際は、リセットする
-      if (shiftScheduleInput.month && shiftScheduleInput.month !== shiftScheduleInput.month) {
-        setShiftSchedules({
+      if (shiftScheduleInput.month && shiftScheduleInput.month !== shiftSchedules.month) {
+
+        // 一旦ここで休業日を計算するが、後で別の場所に移動する
+        const targetMonth = dayjs(shiftScheduleInput.month).startOf('month')
+        const firstDay = targetMonth.startOf('month').format('YYYY-MM-DD')
+        const lastDay = targetMonth.endOf('month').format('YYYY-MM-DD')
+        const holiday = [...holiday_jp.between(new Date(firstDay), new Date(lastDay))].map((h) => {
+          return dayjs(new Date(h.date)).date()
+        })
+
+        //  土日を取得する
+        const weekend = [...Array(targetMonth.daysInMonth()).keys()].map((i) => {
+          const date = targetMonth.date(i + 1)
+          if (date.day() === 0 || date.day() === 6) return i + 1
+          return null
+        }).filter((i) => i !== null) as number[]
+
+        const busyDays = [...holiday, ...weekend].sort((a, b) => a - b)
+
+        const newShiftSchedules = {
           ...initializedShiftSchedule,
           month: shiftScheduleInput.month,
-        })
+          busyDays,
+        };
+
+        setShiftSchedules(newShiftSchedules)
+        callback?.(newShiftSchedules)
         return;
       }
 
