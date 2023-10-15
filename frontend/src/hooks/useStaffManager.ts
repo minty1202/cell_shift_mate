@@ -93,7 +93,7 @@ export const useStaffManager = (initialStaffManagement: InitialStaffManagement) 
           ...staff,
         }
       } else {
-        return staff;
+        return state;
       }
     });
     const sorted = newStaffs.sort((a, b) => a.tier - b.tier);

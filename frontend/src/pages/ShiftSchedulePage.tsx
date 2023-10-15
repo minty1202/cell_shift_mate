@@ -85,12 +85,14 @@ function ShiftSchedule() : ReactElement {
       <br />
       <button onClick={handlePost}>post</button>
       <ShiftTable
+        month={shiftSchedules.month}
         closedDays={shiftSchedules.closedDays}
         busyDays={shiftSchedules.busyDays}
         staffs={staffs}
         shifts={shifts}
         assignedShifts={assignedShifts}
         onChangeLock={handleChangeLock}
+        onChangeStaff={actions.updateStaff}
       />
     </>
   )

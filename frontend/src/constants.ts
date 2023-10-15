@@ -1,5 +1,5 @@
 import { TierKeys, DayStatus } from '@/types'
-import { red, gold, blue, green, purple, geekblue } from '@ant-design/colors';
+import { red, volcano, gold, blue, green, purple, geekblue } from '@ant-design/colors';
 
 export const Tier: Record<TierKeys, number> = {
   Manager: 1,
@@ -26,6 +26,8 @@ export const TierColorMap: Record<number, string[]> = {
   [Tier.Middle]: green,
   [Tier.Junior]: purple,
 };
+
+export const DesiredOffDayColor = volcano;
 
 export const DayStatusColorMap: Record<DayStatus, string[]> = {
   closed: geekblue,
