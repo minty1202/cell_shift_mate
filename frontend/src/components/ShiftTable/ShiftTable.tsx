@@ -249,7 +249,7 @@ function RecordHeaderCell({ staff }: RecordHeaderCellProps): ReactElement {
           <EditOutlined style={{ color: gray[0]}} />
         </Flex>
       </div>
-      </Popover>
+    </Popover>
   )
 }
 
@@ -304,12 +304,12 @@ function Cell({ value }: CellProps): ReactElement {
 
   return (
     <div
-    style={{
-      ...selectDayStatusStyle({ isClosed, isBusy }),
-      ...commonCellStyle,
-      borderColor: DesiredOffDayColor[0],
-      position: 'relative',
-    }}
+      style={{
+        ...selectDayStatusStyle({ isClosed, isBusy }),
+        ...commonCellStyle,
+        borderColor: DesiredOffDayColor[0],
+        position: 'relative',
+      }}
     >
       {isDesiredOffDay && <DesiredOffDayDot />}
       <LockIcon isLocked={isLocked} onClick={onLockIconClick} />
