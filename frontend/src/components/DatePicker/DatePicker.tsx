@@ -9,7 +9,8 @@ interface DatePickerProps {
 export function DatePicker({ value, onChange }: DatePickerProps) {
   return (
     <AntdDatePicker
-      format={'YYYY年MM月'}
+      format='YYYY年MM月'
+      size='small'
       picker="month"
       allowClear={false}
       value={dayjs(value)}
